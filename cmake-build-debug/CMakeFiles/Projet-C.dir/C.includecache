@@ -11,6 +11,8 @@ stdio.h
 -
 gtk/gtk.h
 -
+sqlite3.h
+-
 
 C:/msys64/mingw64/include/atk-1.0/atk/atk-enum-types.h
 atk/atkversion.h

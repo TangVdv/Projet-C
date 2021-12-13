@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <gtk/gtk.h>
+#include <sqlite3.h>
 
 GtkApplication *app;
 GtkWidget *window;
@@ -7,9 +8,13 @@ GtkBuilder *builder;
 GtkWidget *fixed1;
 GtkWidget *button1;
 GtkWidget *label1;
+sqlite3 *db;
 
 
 int main(int argc, char **argv){
+
+    printf("%s\n", sqlite3_libversion());
+    //sqlite3_open("Projet.database", &db);
 
     gtk_init(&argc, &argv);
 
