@@ -9,12 +9,53 @@ GtkWidget *fixed1;
 GtkWidget *button1;
 GtkWidget *label1;
 sqlite3 *db;
+sqlite3_stmt *res;
 
+int callback(void *NotUsed, int argc, char **argv,
+             char **azColName) {
+
+    NotUsed = 0;
+
+    for (int i = 0; i < argc; i++) {
+
+        printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
+    }
+
+    printf("\n");
+
+    return 0;
+}
 
 int main(int argc, char **argv){
 
-    printf("%s\n", sqlite3_libversion());
-    //sqlite3_open("Projet.database", &db);
+    char *err_msg = 0;
+
+    int rc = sqlite3_open("Projet.database", &db);
+
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Cannot open database: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        return 1;
+    }
+
+    char *sql = "SELECT * FROM Test";
+
+    rc = sqlite3_exec(db, sql, callback, 0, &err_msg);
+
+    if (rc != SQLITE_OK ) {
+
+        fprintf(stderr, "Failed to select data\n");
+        fprintf(stderr, "SQL error: %s\n", err_msg);
+
+        sqlite3_free(err_msg);
+        sqlite3_close(db);
+
+        return 1;
+    }
+
+
+    sqlite3_finalize(res);
+    sqlite3_close(db);
 
     gtk_init(&argc, &argv);
 
@@ -36,9 +77,10 @@ int main(int argc, char **argv){
     gtk_widget_show(window);
 
     gtk_main();
-
+    
     return 0;
 }
+
 
 void on_button1_clicked (GtkButton *b){
     gtk_label_set_text(GTK_LABEL(label1), (const gchar*) "Hello World");
