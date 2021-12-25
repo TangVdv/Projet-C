@@ -6,7 +6,10 @@
 GtkApplication *app;
 GtkWidget *window;
 GtkBuilder *builder;
-GtkWidget *button;
+GtkWidget *calendar_frame;
+GtkWidget *btn_create;
+GtkWidget *btn_1;
+GtkWidget *label_btn;
 sqlite3 *db;
 sqlite3_stmt *res;
 FILE *save_file;
@@ -87,19 +90,47 @@ int main(int argc, char **argv){
     gtk_builder_connect_signals(builder, NULL);
     // FIN SETUP GTK
 
+    calendar_frame = GTK_WIDGET(gtk_builder_get_object(builder, "Calendar_frame"));
+    btn_create = GTK_WIDGET(gtk_builder_get_object(builder, "btn_create"));
 
     char *sql = "select * from Account"; // Création d'une requête sql
     sqlite3_exec(db, sql, export_callback, 0, &err_msg); // Execute la requête sql et envoie le résultat à la fonction "export_callback"
 
-    /*
+
     gtk_widget_show(window); // Affiche la fenêtre gtk
 
     gtk_main();
-    */
+
     sqlite3_finalize(res); // Supprime le "statement" de la base de donnée
     sqlite3_close(db); // Ferme la base de donnée
 
     printf("\n\nEnd\n");
 
     return 0;
+}
+
+int refresh_callback(void *NotUsed, int rowCount, char **rowValue, char **rowName){
+    printf("%s = %s\n", rowName[1], rowValue[1]);
+    /*
+    btn_1 = gtk_button_new();
+    label_btn = gtk_label_new("This is a btn");
+
+    gtk_container_add (GTK_CONTAINER (btn_1), label_btn);
+    gtk_widget_show(label_btn);
+
+    gtk_container_add (GTK_CONTAINER (calendar_frame), btn_1);
+    gtk_widget_show(btn_1);
+    */
+    return 0;
+}
+
+void refresh(){
+    char *sql = "SELECT * FROM Calendar"; // Création d'une requête sql
+    sqlite3_exec(db, sql, refresh_callback, 0, &err_msg); // Execute la requête sql et envoie le résultat à la fonction "refresh_callback"
+}
+
+void    on_btn_create_clicked(GtkCheckButton *b){
+    char *sql = "INSERT INTO Calendar(name) VALUES('TODO : add name from input')"; // Création d'une requête sql
+    sqlite3_exec(db, sql, NULL, 0, &err_msg); // Execute la requête sql et envoie le résultat à la fonction "refresh"
+    refresh();
 }
