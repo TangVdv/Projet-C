@@ -1,0 +1,3 @@
+/home/tangvdv/CLionProjects/Projet-C/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/tangvdv/CLionProjects/Projet-C/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/tangvdv/CLionProjects/Projet-C/cmake-build-debug/CMakeFiles/Projet-C.dir
