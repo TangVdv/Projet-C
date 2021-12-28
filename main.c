@@ -8,7 +8,7 @@ GtkWidget *window;
 GtkBuilder *builder;
 GtkWidget *calendar_frame;
 GtkWidget *btn_create;
-GtkWidget *entry;
+GtkWidget *dialog;
 sqlite3 *db;
 sqlite3_stmt *res;
 FILE *save_file;
@@ -17,7 +17,7 @@ int rc;
 
 void    on_btn_delete_clicked(GtkWidget *b);
 void    on_btn_export_clicked(GtkWidget *b);
-void    on_btn_import_clicked(GtkWidget *b);
+void    on_btn_import_clicked();
 
 /*
  * Importation d'un calendrier :
@@ -131,7 +131,6 @@ int main(int argc, char **argv){
 
     calendar_frame = GTK_WIDGET(gtk_builder_get_object(builder, "Calendar_btn_grid"));
     btn_create = GTK_WIDGET(gtk_builder_get_object(builder, "btn_create"));
-    entry = GTK_WIDGET(gtk_builder_get_object(builder, "name_entry"));
 
     refresh();
 
@@ -146,11 +145,21 @@ int main(int argc, char **argv){
 }
 
 
-void    on_new_activate(GtkMenuItem *m){
-    printf("New activate\n");
+void    on_new_activate(){
+    dialog = GTK_WIDGET(gtk_builder_get_object(builder, "dialog_new"));
+    gtk_window_set_default_size(GTK_WINDOW(dialog), 400, 300);
+    gtk_widget_show(dialog);
 }
 
-void    on_btn_import_clicked(GtkWidget *b){
+void    on_exit_activate(){
+    gtk_main_quit();
+}
+
+void    on_btn_cancel_clicked(){
+    gtk_widget_destroy(dialog);
+}
+
+void    on_btn_import_clicked(){
     printf("Import");
 }
 
@@ -172,7 +181,8 @@ void    on_btn_delete_clicked(GtkWidget *b){
     refresh();
 }
 
-void    on_btn_create_clicked(GtkCheckButton *b){
+void    on_btn_create_clicked(){
+    GtkWidget *entry = GTK_WIDGET(gtk_builder_get_object(builder, "entry_new_name"));
     char *getEntry = gtk_editable_get_chars(GTK_EDITABLE(entry), 0, -1);
     if (strcmp(getEntry, "") != 0) {
         char * sql;
@@ -185,5 +195,6 @@ void    on_btn_create_clicked(GtkCheckButton *b){
         refresh();
 
         gtk_editable_delete_text(GTK_EDITABLE(entry), 0, -1);
+        on_btn_cancel_clicked();
     }
 }
