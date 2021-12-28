@@ -9,6 +9,7 @@ GtkBuilder *builder;
 GtkWidget *calendar_frame;
 GtkWidget *btn_create;
 GtkWidget *dialog;
+GtkWidget *entry;
 sqlite3 *db;
 sqlite3_stmt *res;
 FILE *save_file;
@@ -151,12 +152,24 @@ void    on_new_activate(){
     gtk_widget_show(dialog);
 }
 
+void    on_import_activate(){
+    dialog = GTK_WIDGET(gtk_builder_get_object(builder, "dialog_import"));
+    gtk_window_set_default_size(GTK_WINDOW(dialog), 400, 300);
+    gtk_widget_show(dialog);
+}
+
+void    on_export_activate(){
+    dialog = GTK_WIDGET(gtk_builder_get_object(builder, "dialog_export"));
+    gtk_window_set_default_size(GTK_WINDOW(dialog), 400, 300);
+    gtk_widget_show(dialog);
+}
+
 void    on_exit_activate(){
     gtk_main_quit();
 }
 
 void    on_btn_cancel_clicked(){
-    gtk_widget_destroy(dialog);
+    gtk_widget_hide(dialog);
 }
 
 void    on_btn_import_clicked(){
@@ -182,7 +195,7 @@ void    on_btn_delete_clicked(GtkWidget *b){
 }
 
 void    on_btn_create_clicked(){
-    GtkWidget *entry = GTK_WIDGET(gtk_builder_get_object(builder, "entry_new_name"));
+    entry = GTK_WIDGET(gtk_builder_get_object(builder, "entry_new_name"));
     char *getEntry = gtk_editable_get_chars(GTK_EDITABLE(entry), 0, -1);
     if (strcmp(getEntry, "") != 0) {
         char * sql;
@@ -196,5 +209,17 @@ void    on_btn_create_clicked(){
 
         gtk_editable_delete_text(GTK_EDITABLE(entry), 0, -1);
         on_btn_cancel_clicked();
+    }
+}
+
+void    on_btn_validate_import_clicked(){
+    printf("Import");
+}
+
+void    on_btn_validate_export_clicked(){
+    entry = GTK_WIDGET(gtk_builder_get_object(builder, "entry_export_name"));
+    char *getEntry = gtk_editable_get_chars(GTK_EDITABLE(entry), 0, -1);
+    if (strcmp(getEntry, "") != 0) {
+        printf("Export : %s", getEntry);
     }
 }
