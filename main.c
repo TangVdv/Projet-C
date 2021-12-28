@@ -17,6 +17,7 @@ int rc;
 
 void    on_btn_delete_clicked(GtkWidget *b);
 void    on_btn_export_clicked(GtkWidget *b);
+void    on_btn_import_clicked(GtkWidget *b);
 
 /*
  * Importation d'un calendrier :
@@ -43,6 +44,7 @@ int import(){
  * Récupère les valeurs dans la base de donnée pour les insérer dans un fichier texte
  */
 int export_callback(void *NotUsed, int rowCount, char **rowValue, char **rowName) {
+    save_file = fopen("export.txt", "a"); // Créer le fichier s'il n'existe pas et l'ouvre en mode édition
     for (int i = 1; i < rowCount; i++) {
         //printf("%s = %s\n", rowName[i], rowValue[i]);
         fputs("'", save_file); // Ouvre la guillemet au début d'une valeur
@@ -51,6 +53,7 @@ int export_callback(void *NotUsed, int rowCount, char **rowValue, char **rowName
         if (i != rowCount - 1) fputs(",", save_file); // Ajoute une virgule entre chaque valeur
     }
     fputs("\n", save_file); // Saute une ligne dans le fichier texte
+    fclose(save_file);
     return 0;
 }
 
@@ -99,45 +102,9 @@ void refresh(){
     sqlite3_exec(db, sql, refresh_callback, 0, &err_msg); // Execute la requête sql et envoie le résultat à la fonction "refresh_callback"
 }
 
-void    on_btn_export_clicked(GtkWidget *b){
-    const gchar *btnId =   gtk_widget_get_name(b);
-    //     TODO: Changer la requête sql
-    char *sql = "select * from Day"; // Création d'une requête sql
-    sqlite3_exec(db, sql, export_callback, 0, &err_msg); // Execute la requête sql et envoie le résultat à la fonction "export_callback"
-
-}
-
-void    on_btn_delete_clicked(GtkWidget *b){
-    const gchar *btnId =   gtk_widget_get_name(b);
-    char * sql;
-    sql = (char *) malloc(100 *sizeof(char)); // Allocation d'une variable
-    strcpy(sql, "DELETE FROM Calendar WHERE id="); // Ajoute le début de la requête sql dans la variable
-    strcat(sql, btnId);
-    sqlite3_exec(db, sql, NULL, 0, &err_msg); // Execute la requête sql
-    refresh();
-}
-
-void    on_btn_create_clicked(GtkCheckButton *b){
-    char *getEntry = gtk_editable_get_chars(GTK_EDITABLE(entry), 0, -1);
-    if (strcmp(getEntry, "") != 0) {
-        char * sql;
-        sql = (char *) malloc(100 *sizeof(char)); // Allocation d'une variable
-        strcpy(sql, "INSERT INTO Calendar(name) VALUES('"); // Ajoute le début de la requête sql dans la variable
-        strcat(sql, getEntry); // Ajoute la valeur dans la requête sql
-        strcat(sql, "')"); // Ajoute la parenthèse fermante de la requête sql
-
-        sqlite3_exec(db, sql, NULL, 0,&err_msg); // Execute la requête sql et envoie le résultat à la fonction "refresh"
-        refresh();
-
-        gtk_editable_delete_text(GTK_EDITABLE(entry), 0, -1);
-    }
-}
-
 int main(int argc, char **argv){
 
     printf("Start\n\n");
-
-    save_file = fopen("export.txt", "a"); // Créer le fichier s'il n'existe pas et l'ouvre en mode édition
 
     rc = sqlite3_open("Projet.database", &db); // Ouvre la base de donnée
 
@@ -176,4 +143,47 @@ int main(int argc, char **argv){
     printf("\n\nEnd\n");
 
     return 0;
+}
+
+
+void    on_new_activate(GtkMenuItem *m){
+    printf("New activate\n");
+}
+
+void    on_btn_import_clicked(GtkWidget *b){
+    printf("Import");
+}
+
+void    on_btn_export_clicked(GtkWidget *b){
+    const gchar *btnId =   gtk_widget_get_name(b);
+    //     TODO: Changer la requête sql
+    char *sql = "select * from Day"; // Création d'une requête sql
+    sqlite3_exec(db, sql, export_callback, 0, &err_msg); // Execute la requête sql et envoie le résultat à la fonction "export_callback"
+
+}
+
+void    on_btn_delete_clicked(GtkWidget *b){
+    const gchar *btnId =   gtk_widget_get_name(b);
+    char * sql;
+    sql = (char *) malloc(100 *sizeof(char)); // Allocation d'une variable
+    strcpy(sql, "DELETE FROM Calendar WHERE id="); // Ajoute le début de la requête sql dans la variable
+    strcat(sql, btnId);
+    sqlite3_exec(db, sql, NULL, 0, &err_msg); // Execute la requête sql
+    refresh();
+}
+
+void    on_btn_create_clicked(GtkCheckButton *b){
+    char *getEntry = gtk_editable_get_chars(GTK_EDITABLE(entry), 0, -1);
+    if (strcmp(getEntry, "") != 0) {
+        char * sql;
+        sql = (char *) malloc(100 *sizeof(char)); // Allocation d'une variable
+        strcpy(sql, "INSERT INTO Calendar(name) VALUES('"); // Ajoute le début de la requête sql dans la variable
+        strcat(sql, getEntry); // Ajoute la valeur dans la requête sql
+        strcat(sql, "')"); // Ajoute la parenthèse fermante de la requête sql
+
+        sqlite3_exec(db, sql, NULL, 0,&err_msg); // Execute la requête sql et envoie le résultat à la fonction "refresh"
+        refresh();
+
+        gtk_editable_delete_text(GTK_EDITABLE(entry), 0, -1);
+    }
 }
