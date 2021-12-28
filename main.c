@@ -10,6 +10,7 @@ GtkWidget *calendar_frame;
 GtkWidget *btn_create;
 GtkWidget *dialog;
 GtkWidget *entry;
+GtkWidget *fileChooser;
 sqlite3 *db;
 sqlite3_stmt *res;
 FILE *save_file;
@@ -181,7 +182,6 @@ void    on_btn_export_clicked(GtkWidget *b){
     //     TODO: Changer la requête sql
     char *sql = "select * from Day"; // Création d'une requête sql
     sqlite3_exec(db, sql, export_callback, 0, &err_msg); // Execute la requête sql et envoie le résultat à la fonction "export_callback"
-
 }
 
 void    on_btn_delete_clicked(GtkWidget *b){
@@ -216,10 +216,16 @@ void    on_btn_validate_import_clicked(){
     printf("Import");
 }
 
+// TODO : link validate btn to the real export function
 void    on_btn_validate_export_clicked(){
     entry = GTK_WIDGET(gtk_builder_get_object(builder, "entry_export_name"));
+    fileChooser = GTK_WIDGET(gtk_builder_get_object(builder, "fileChooser_export"));
+    char *getFileName = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fileChooser));
     char *getEntry = gtk_editable_get_chars(GTK_EDITABLE(entry), 0, -1);
     if (strcmp(getEntry, "") != 0) {
-        printf("Export : %s", getEntry);
+        printf("Export : %s\n", getEntry);
+    }
+    if (strcmp(getFileName, "") != 0) {
+        printf("file name : %s\n", getFileName);
     }
 }
