@@ -4,9 +4,12 @@
 GtkApplication *app;
 GtkWidget *window;
 GtkBuilder *builder;
-GtkWidget *fixed1;
+GtkWidget *saveButton;
+GtkWidget *textview;
+GtkTextBuffer *textbuffer;
 GtkWidget *day1;
-GtkWidget *label1;
+
+char tmp[1024]; //Variable for textview
 
 
 int main(int argc, char **argv){
@@ -21,9 +24,11 @@ int main(int argc, char **argv){
 
     g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
-    fixed1 = GTK_WIDGET(gtk_builder_get_object(builder, "fixed1"));
+
     day1 = GTK_WIDGET(gtk_builder_get_object(builder, "day"));
-    label1 = GTK_WIDGET(gtk_builder_get_object(builder, "label1"));
+
+    saveButton = GTK_WIDGET(gtk_builder_get_object(builder, "saveButton"));
+    textview = GTK_WIDGET(gtk_builder_get_object(builder, "textview"));
 
 
     gtk_builder_connect_signals(builder, NULL);
@@ -35,17 +40,38 @@ int main(int argc, char **argv){
     return 0;
 }
 
-void on_day1_clicked (GtkButton *b){
+void on_day_clicked (GtkButton *b){
     //printf("Test");
 
     gtk_widget_hide(window);
-    builder = gtk_builder_new_from_file("Test.glade");
+    builder = gtk_builder_new_from_file("textEditW.glade");
 
     window = GTK_WIDGET(gtk_builder_get_object(builder, "window"));
+
 
     g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
     gtk_builder_connect_signals(builder, NULL);
 
+    saveButton = GTK_WIDGET(gtk_builder_get_object(builder, "saveButton"));
+    textview = GTK_WIDGET(gtk_builder_get_object(builder, "textview"));
+    //TextEdit
+    textbuffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
+    strcpy(tmp, "test");
+    gtk_text_buffer_set_text(textbuffer, (const gchar *) tmp, (gint) -1);
+
+
     gtk_widget_show(window);
+
+}
+
+void on_saveButton_clicked (GtkButton *b){
+    //printf("Hello");
+    GtkTextIter begin, end;
+    gchar * text;
+    gtk_text_buffer_get_iter_at_offset(GTK_TEXT_BUFFER(textbuffer), &begin, (gint) 0);
+    gtk_text_buffer_get_iter_at_offset(GTK_TEXT_BUFFER(textbuffer), &end, (gint) -1);
+
+    text = gtk_text_buffer_get_text(GTK_TEXT_BUFFER(textbuffer), &begin, &end, TRUE);
+    //printf("%s", text);
 }
