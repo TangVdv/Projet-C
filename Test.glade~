@@ -2,6 +2,15 @@
 <!-- Generated with glade 3.22.2 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
+  <object class="GtkListStore" id="ListStore">
+    <columns>
+      <!-- column-name Calendar_name1 -->
+      <column type="Calendar_name"/>
+    </columns>
+    <data>
+      <row/>
+    </data>
+  </object>
   <object class="GtkDialog" id="dialog_export">
     <property name="can_focus">False</property>
     <property name="type_hint">dialog</property>
@@ -65,17 +74,22 @@
           </packing>
         </child>
         <child>
-          <object class="GtkEntry" id="entry_export_name">
+          <object class="GtkComboBox">
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="valign">start</property>
-            <property name="vexpand">True</property>
-            <property name="max_length">50</property>
-            <property name="width_chars">5</property>
+            <property name="can_focus">False</property>
+            <property name="model">ListStore</property>
+            <property name="has_entry">True</property>
+            <property name="entry_text_column">0</property>
+            <child internal-child="entry">
+              <object class="GtkEntry">
+                <property name="can_focus">False</property>
+                <property name="placeholder_text" translatable="yes">Choisir un calendrier</property>
+              </object>
+            </child>
           </object>
           <packing>
             <property name="expand">False</property>
-            <property name="fill">False</property>
+            <property name="fill">True</property>
             <property name="position">2</property>
           </packing>
         </child>
@@ -95,6 +109,7 @@
           <object class="GtkFileChooserButton" id="fileChooser_export">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="action">select-folder</property>
             <property name="title" translatable="yes"/>
           </object>
           <packing>
