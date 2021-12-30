@@ -4,12 +4,9 @@
   <requires lib="gtk+" version="3.24"/>
   <object class="GtkListStore" id="ListStore">
     <columns>
-      <!-- column-name Calendar_name1 -->
-      <column type="Calendar_name"/>
+      <!-- column-name gchararray1 -->
+      <column type="gchararray"/>
     </columns>
-    <data>
-      <row/>
-    </data>
   </object>
   <object class="GtkDialog" id="dialog_export">
     <property name="can_focus">False</property>
@@ -81,7 +78,7 @@
             <property name="has_entry">True</property>
             <property name="entry_text_column">0</property>
             <child internal-child="entry">
-              <object class="GtkEntry">
+              <object class="GtkEntry" id="entry_export_name">
                 <property name="can_focus">False</property>
                 <property name="placeholder_text" translatable="yes">Choisir un calendrier</property>
               </object>
@@ -185,7 +182,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkFileChooserButton" id="fileChoooser_import">
+          <object class="GtkFileChooserButton" id="fileChooser_import">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="title" translatable="yes"/>
@@ -301,7 +298,6 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="label" translatable="yes">Nouveau</property>
-                    <property name="use_underline">True</property>
                     <signal name="activate" handler="on_new_activate" swapped="no"/>
                   </object>
                 </child>
@@ -332,7 +328,6 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="label" translatable="yes">Quitter</property>
-                    <property name="use_underline">True</property>
                     <signal name="activate" handler="on_exit_activate" swapped="no"/>
                   </object>
                 </child>
@@ -347,34 +342,22 @@
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <child>
-          <object class="GtkFrame" id="Calendar_frame">
-            <property name="width_request">800</property>
+          <object class="GtkGrid" id="Calendar_btn_grid">
+            <property name="width_request">1000</property>
             <property name="height_request">500</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="label_xalign">0</property>
-            <property name="shadow_type">none</property>
+            <property name="margin_left">20</property>
+            <property name="margin_right">20</property>
+            <property name="margin_top">20</property>
+            <property name="margin_bottom">20</property>
+            <property name="hexpand">False</property>
+            <property name="vexpand">False</property>
+            <property name="column_spacing">20</property>
             <child>
-              <object class="GtkBox" id="Calendar_btn_grid">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="margin_left">30</property>
-                <property name="margin_right">30</property>
-                <property name="margin_top">100</property>
-                <property name="margin_bottom">100</property>
-                <property name="spacing">5</property>
-                <child>
-                  <placeholder/>
-                </child>
-              </object>
-            </child>
-            <child type="label_item">
               <placeholder/>
             </child>
           </object>
-          <packing>
-            <property name="x">200</property>
-          </packing>
         </child>
       </object>
     </child>

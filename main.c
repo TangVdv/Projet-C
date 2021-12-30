@@ -7,10 +7,12 @@ GtkApplication *app;
 GtkWidget *window;
 GtkBuilder *builder;
 GtkWidget *calendar_frame;
-GtkWidget *btn_create;
 GtkWidget *dialog;
 GtkWidget *entry;
 GtkWidget *fileChooser;
+GtkTreeIter iter;
+GtkTreePath *path;
+GtkListStore *ListStore;
 sqlite3 *db;
 sqlite3_stmt *res;
 FILE *save_file;
@@ -33,7 +35,6 @@ int import(){
         strcpy(sql, "INSERT INTO Day(content, date) VALUES("); // Ajoute le début de la requête sql dans la variable
         strncat(sql, line, strlen(line)-1); // Ajoute la ligne lu dans le fichier texte à la suite de la requête
         strncat(sql, ")", 100); // Ajoute la parenthèse fermante de la requête sql
-        printf("\n%s", sql); // Affiche la requête sql
         sqlite3_exec(db, sql, NULL , 0, &err_msg); // Execute la requête sql
         free(sql);
     }
@@ -59,23 +60,21 @@ int export_callback(void *NotUsed, int rowCount, char **rowValue, char **rowName
 
 int refresh_callback(void *NotUsed, int rowCount, char **rowValue, char **rowName){
     GtkWidget *box_btn_calendar = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    GtkWidget *btn_calendar_overview = gtk_button_new();
-    GtkWidget *btn_calendar_delete = gtk_button_new();
-    GtkWidget *label_btn_overview = gtk_label_new(rowValue[1]);
-    GtkWidget *label_btn_delete = gtk_label_new("delete");
+    GtkWidget *btn_calendar_overview = gtk_button_new_with_label(rowValue[1]);
+    GtkWidget *btn_calendar_delete = gtk_button_new_with_label("delete");
+
     gtk_widget_set_name(btn_calendar_overview, rowValue[0]);
     gtk_widget_set_name(btn_calendar_delete, rowValue[0]);
 
     g_signal_connect(G_OBJECT(btn_calendar_delete), "clicked", G_CALLBACK(on_btn_delete_clicked), NULL);
 
+
     gtk_box_pack_start(GTK_BOX(box_btn_calendar),btn_calendar_overview,1,1,0);
     gtk_box_pack_start(GTK_BOX(box_btn_calendar),btn_calendar_delete,0,0,0);
 
-    gtk_container_add (GTK_CONTAINER (btn_calendar_delete), label_btn_delete);
-    gtk_container_add (GTK_CONTAINER (btn_calendar_overview), label_btn_overview);
-
     gtk_container_add (GTK_CONTAINER (calendar_frame), box_btn_calendar);
-
+    gtk_widget_set_hexpand(box_btn_calendar, TRUE);
+    gtk_widget_set_vexpand(box_btn_calendar, TRUE);
     gtk_widget_show_all(window);
 
     return 0;
@@ -91,6 +90,11 @@ void refresh(){
 
     char *sql = "SELECT * FROM Calendar"; // Création d'une requête sql
     sqlite3_exec(db, sql, refresh_callback, 0, &err_msg); // Execute la requête sql et envoie le résultat à la fonction "refresh_callback"
+}
+
+int print_combobox(void *NotUsed, int rowCount, char **rowValue, char **rowName){
+    gtk_list_store_append(ListStore, &iter);
+    gtk_list_store_set(ListStore, &iter, 0, rowValue[0], -1);
 }
 
 int main(int argc, char **argv){
@@ -112,8 +116,8 @@ int main(int argc, char **argv){
     builder = gtk_builder_new_from_file("Test.glade");
 
     window = GTK_WIDGET(gtk_builder_get_object(builder, "window"));
-
-    app = gtk_application_new ("test.gtk.calendar", G_APPLICATION_FLAGS_NONE);
+    gtk_window_set_default_size(GTK_WINDOW(window), 1000, 500);
+    gtk_widget_show_all(window);
 
     g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
@@ -121,9 +125,11 @@ int main(int argc, char **argv){
     // FIN SETUP GTK
 
     calendar_frame = GTK_WIDGET(gtk_builder_get_object(builder, "Calendar_btn_grid"));
-    btn_create = GTK_WIDGET(gtk_builder_get_object(builder, "btn_create"));
-
+    ListStore = GTK_LIST_STORE(gtk_builder_get_object(builder, "ListStore"));
     refresh();
+
+    char *sql = "select name from Calendar"; // Création d'une requête sql
+    sqlite3_exec(db, sql, print_combobox, 0, &err_msg); // Execute la requête sql et envoie le résultat à la fonction "print_combobox"
 
     gtk_main();
 
@@ -149,12 +155,10 @@ void    on_import_activate(){
 }
 
 void    on_export_activate(){
-    GtkTreeIter *treeiter;
     dialog = GTK_WIDGET(gtk_builder_get_object(builder, "dialog_export"));
     gtk_window_set_default_size(GTK_WINDOW(dialog), 400, 300);
     gtk_widget_show(dialog);
-    GtkWidget *ListStore =  GTK_WIDGET(gtk_builder_get_object(builder, "ListStore"));
-    gtk_list_store_set(ListStore, &treeiter, "test", 0);
+
 }
 
 void    on_exit_activate(){
@@ -163,10 +167,6 @@ void    on_exit_activate(){
 
 void    on_btn_cancel_clicked(){
     gtk_widget_hide(dialog);
-}
-
-void    on_btn_import_clicked(){
-    printf("Import");
 }
 
 void    on_btn_delete_clicked(GtkWidget *b){
@@ -203,7 +203,7 @@ void    on_btn_validate_import_clicked(){
     fileChooser = GTK_WIDGET(gtk_builder_get_object(builder, "fileChooser_import"));
     char *getFileName = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fileChooser));
     if (strcmp(getFileName, "") != 0) {
-        printf("file name : %s\n", getFileName);
+        //printf("file name : %s\n", getFileName);
         save_file = fopen(getFileName, "rt");  // Ouvre le fichier texte en mode lecture
         import();
     }
@@ -211,13 +211,13 @@ void    on_btn_validate_import_clicked(){
 }
 
 void    on_btn_validate_export_clicked(){
-    /*
     entry = GTK_WIDGET(gtk_builder_get_object(builder, "entry_export_name"));
     fileChooser = GTK_WIDGET(gtk_builder_get_object(builder, "fileChooser_export"));
     char *getFolderName = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fileChooser));
     char *getEntry = gtk_editable_get_chars(GTK_EDITABLE(entry), 0, -1);
     if (strcmp(getFolderName, "") != 0 && strcmp(getEntry, "") != 0) {
         char *getFileName;
+        printf("%s\n", getEntry);
         getFileName = (char *) malloc(100 * sizeof(char));
         strcpy(getFileName, getFolderName);
         strcat(getFileName, "/");
@@ -225,7 +225,7 @@ void    on_btn_validate_export_clicked(){
         strcat(getFileName, ".txt");
         on_btn_cancel_clicked();
 
-        printf("file name : %s\n", getFileName);
+        //printf("file name : %s\n", getFileName);
         save_file = fopen(getFileName, "w"); // Créer le fichier s'il n'existe pas et l'ouvre en mode édition
         //     TODO: Changer la requête sql
         char *sql = "select * from Day"; // Création d'une requête sql
@@ -233,5 +233,4 @@ void    on_btn_validate_export_clicked(){
         free(getFileName);
         fclose(save_file);
     }
-     */
 }
