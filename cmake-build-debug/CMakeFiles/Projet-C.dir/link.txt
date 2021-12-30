@@ -1,3 +1,1 @@
-"C:\Program Files\JetBrains\CLion 2021.2.3\bin\cmake\win\bin\cmake.exe" -E rm -f CMakeFiles\Projet-C.dir/objects.a
-C:\msys64\mingw64\bin\ar.exe cr CMakeFiles\Projet-C.dir/objects.a @CMakeFiles\Projet-C.dir\objects1.rsp
-C:\msys64\mingw64\bin\gcc.exe -g -Wl,--whole-archive CMakeFiles\Projet-C.dir/objects.a -Wl,--no-whole-archive -o Projet-C.exe -Wl,--out-implib,libProjet-C.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\Projet-C.dir\linklibs.rsp
+/usr/bin/cc -g CMakeFiles/Projet-C.dir/main.c.o -o Projet-C  -lgtk-3 -lgdk-3 -lpangocairo-1.0 -lpango-1.0 -lharfbuzz -latk-1.0 -lcairo-gobject -lcairo -lgdk_pixbuf-2.0 -lgio-2.0 -lgobject-2.0 -lglib-2.0 
