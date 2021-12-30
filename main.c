@@ -2,6 +2,7 @@
 #include <gtk/gtk.h>
 #include <sqlite3.h>
 #include <string.h>
+#include <curl/curl.h>
 
 GtkApplication *app;
 GtkWidget *window;
@@ -16,10 +17,12 @@ GtkListStore *ListStore;
 sqlite3 *db;
 sqlite3_stmt *res;
 FILE *save_file;
+CURL *curl;
 char *err_msg = 0;
 int rc;
 
 void    on_btn_delete_clicked(GtkWidget *b);
+void    on_btn_overview_clicked();
 void    on_btn_export_clicked(GtkWidget *b);
 void    on_btn_import_clicked();
 
@@ -66,6 +69,7 @@ int refresh_callback(void *NotUsed, int rowCount, char **rowValue, char **rowNam
     gtk_widget_set_name(btn_calendar_overview, rowValue[0]);
     gtk_widget_set_name(btn_calendar_delete, rowValue[0]);
 
+    g_signal_connect(G_OBJECT(btn_calendar_overview), "clicked", G_CALLBACK(on_btn_overview_clicked), NULL);
     g_signal_connect(G_OBJECT(btn_calendar_delete), "clicked", G_CALLBACK(on_btn_delete_clicked), NULL);
 
 
@@ -97,21 +101,8 @@ int print_combobox(void *NotUsed, int rowCount, char **rowValue, char **rowName)
     gtk_list_store_set(ListStore, &iter, 0, rowValue[0], -1);
 }
 
-int main(int argc, char **argv){
-
-    printf("Start\n\n");
-
-    rc = sqlite3_open("Projet.database", &db); // Ouvre la base de donnée
-
-    // Check si la base de donnée existe
-    if (rc != SQLITE_OK) {
-        fprintf(stderr, "Cannot open database: %s\n", sqlite3_errmsg(db));
-        sqlite3_close(db);
-        return 1;
-    }
-
-    // DEBUT SETUP GTK
-    gtk_init(&argc, &argv);
+void main_menu(){
+    printf("Show menu\n");
 
     builder = gtk_builder_new_from_file("Test.glade");
 
@@ -122,7 +113,6 @@ int main(int argc, char **argv){
     g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
     gtk_builder_connect_signals(builder, NULL);
-    // FIN SETUP GTK
 
     calendar_frame = GTK_WIDGET(gtk_builder_get_object(builder, "Calendar_btn_grid"));
     ListStore = GTK_LIST_STORE(gtk_builder_get_object(builder, "ListStore"));
@@ -130,6 +120,101 @@ int main(int argc, char **argv){
 
     char *sql = "select name from Calendar"; // Création d'une requête sql
     sqlite3_exec(db, sql, print_combobox, 0, &err_msg); // Execute la requête sql et envoie le résultat à la fonction "print_combobox"
+
+}
+
+
+
+
+size_t got_data(char *buffer, size_t itemsize, size_t nitems, void* ignorethis){
+    size_t bytes = itemsize * nitems;
+    int linenumber = 0;
+    //printf("New chunk (%zu bytes)\n", bytes);
+    //printf("%d\t", linenumber);
+    for (int i = 0; i < bytes; ++i) {
+        if (linenumber == 20){
+            printf("%c", buffer[i]);
+            if (buffer[i] == '\n') break;
+        }
+
+        else {
+            if (buffer[i] == '\n') {
+                linenumber++;
+                //printf("%d:\t", linenumber);
+            }
+        }
+        /*
+        printf("%c", buffer[i]);
+        if (buffer[i] == '\n') {
+            linenumber++;
+            printf("%d:\t", linenumber);
+        }
+         */
+    }
+    printf("\n");
+    return bytes;
+}
+
+
+void main_calendar() {
+    printf("Show calendar\n");
+
+    curl = curl_easy_init();
+    int year;
+    int month_id;
+    char month_name[12][9] = {
+            "Janvier",
+            "Février",
+            "Mars",
+            "Avril",
+            "Mai",
+            "Juin",
+            "Juillet",
+            "Août",
+            "Septembre",
+            "Octobre",
+            "Novembre",
+            "Décembre"
+    };
+
+    if(curl){
+        curl_easy_setopt(curl, CURLOPT_URL, "https://www.calendardate.com/todays.htm");
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, got_data);
+
+        curl_easy_perform(curl);
+        curl_easy_cleanup(curl);
+    }
+
+
+
+
+
+
+    builder = gtk_builder_new_from_file("Calendar.glade");
+
+    window = GTK_WIDGET(gtk_builder_get_object(builder, "window_calendar"));
+
+    gtk_widget_show_all(window);
+
+    g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+
+    gtk_builder_connect_signals(builder, NULL);
+}
+
+int main(int argc, char **argv){
+    printf("Start\n\n");
+
+    rc = sqlite3_open("Projet.database", &db); // Ouvre la base de donnée
+
+    // Check si la base de donnée existe
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Cannot open database: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        return 1;
+    }
+    gtk_init(&argc, &argv);
+
+    main_menu();
 
     gtk_main();
 
@@ -167,6 +252,11 @@ void    on_exit_activate(){
 
 void    on_btn_cancel_clicked(){
     gtk_widget_hide(dialog);
+}
+
+void on_btn_overview_clicked(){
+    gtk_widget_hide(window);
+    main_calendar();
 }
 
 void    on_btn_delete_clicked(GtkWidget *b){
