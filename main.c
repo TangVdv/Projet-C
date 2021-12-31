@@ -20,9 +20,10 @@ FILE *save_file;
 CURL *curl;
 char *err_msg = 0;
 int rc;
+const gchar *btn_calendar_id;
 
 int year, month_id;
-char month_name[12][9] = {
+char month_name[12][10] = {
         "Janvier",
         "Février",
         "Mars",
@@ -31,15 +32,14 @@ char month_name[12][9] = {
         "Juin",
         "Juillet",
         "Août",
-        "Septembre",
+        "Septembre\0",
         "Octobre",
         "Novembre",
         "Décembre"
 };
 
 void    on_btn_delete_clicked(GtkWidget *b);
-void    on_btn_overview_clicked();
-void    on_btn_export_clicked(GtkWidget *b);
+void    on_btn_overview_clicked(GtkWidget *b);
 void    on_btn_import_clicked();
 
 /*
@@ -77,7 +77,7 @@ int export_callback(void *NotUsed, int rowCount, char **rowValue, char **rowName
     return 0;
 }
 
-int refresh_callback(void *NotUsed, int rowCount, char **rowValue, char **rowName){
+int refresh_menu_callback(void *NotUsed, int rowCount, char **rowValue, char **rowName){
     GtkWidget *box_btn_calendar = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     GtkWidget *btn_calendar_overview = gtk_button_new_with_label(rowValue[1]);
     GtkWidget *btn_calendar_delete = gtk_button_new_with_label("delete");
@@ -100,7 +100,7 @@ int refresh_callback(void *NotUsed, int rowCount, char **rowValue, char **rowNam
     return 0;
 }
 
-void refresh(){
+void refresh_menu(){
     GList *children, *iter;
     // TODO : Understand and comment this shit
     children = gtk_container_get_children(GTK_CONTAINER(calendar_frame));
@@ -109,7 +109,7 @@ void refresh(){
     g_list_free(children);
 
     char *sql = "SELECT * FROM Calendar"; // Création d'une requête sql
-    sqlite3_exec(db, sql, refresh_callback, 0, &err_msg); // Execute la requête sql et envoie le résultat à la fonction "refresh_callback"
+    sqlite3_exec(db, sql, refresh_menu_callback, 0, &err_msg); // Execute la requête sql et envoie le résultat à la fonction "refresh_menu_callback"
 }
 
 int print_combobox(void *NotUsed, int rowCount, char **rowValue, char **rowName){
@@ -132,7 +132,7 @@ void main_menu(){
 
     calendar_frame = GTK_WIDGET(gtk_builder_get_object(builder, "Calendar_btn_grid"));
     ListStore = GTK_LIST_STORE(gtk_builder_get_object(builder, "ListStore"));
-    refresh();
+    refresh_menu();
 
     char *sql = "select name from Calendar"; // Création d'une requête sql
     sqlite3_exec(db, sql, print_combobox, 0, &err_msg); // Execute la requête sql et envoie le résultat à la fonction "print_combobox"
@@ -172,25 +172,33 @@ size_t got_data(char *buffer, size_t itemsize, size_t nitems, void* ignorethis){
     return bytes;
 }
 
+int print_label_calendar_name(void *NotUsed, int rowCount, char **rowValue, char **rowName){
+    GtkWidget *label_calendar_name = GTK_WIDGET(gtk_builder_get_object(builder, "label_calendar_name"));
+    printf("%s", rowValue[0]);
+    gtk_label_set_text(GTK_LABEL(label_calendar_name), rowValue[0]);
+    gtk_widget_show_all(window);
+}
 
 void refresh_calendar(){
+    char snum[4];
     GtkWidget *label_year = GTK_WIDGET(gtk_builder_get_object(builder, "label_year"));
     GtkWidget *label_month = GTK_WIDGET(gtk_builder_get_object(builder, "label_month"));
 
-    //gtk_label_set_text(GTK_LABEL(label_year), (const gchar*)year);
-    //gtk_label_set_text(GTK_LABEL(label_month), month_name[month_id]);
+
+    sprintf(snum,"%d",year);
+    gtk_label_set_text(GTK_LABEL(label_year), snum);
+    gtk_label_set_text(GTK_LABEL(label_month), month_name[month_id]);
 
     gtk_widget_show_all(window);
 }
 
 void main_calendar() {
-    printf("Show calendar\n");
 
     year = 2021;
     month_id = 11;
 
+    /*
     curl = curl_easy_init();
-
     if(curl){
         curl_easy_setopt(curl, CURLOPT_URL, "https://www.calendardate.com/todays.htm");
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, got_data);
@@ -198,6 +206,7 @@ void main_calendar() {
         curl_easy_perform(curl);
         curl_easy_cleanup(curl);
     }
+    */
 
     builder = gtk_builder_new_from_file("Calendar.glade");
 
@@ -263,20 +272,29 @@ void    on_btn_cancel_clicked(){
     gtk_widget_hide(dialog);
 }
 
-void on_btn_overview_clicked(){
+void    on_btn_overview_clicked(GtkWidget *b){
     gtk_widget_hide(window);
     main_calendar();
+
+    btn_calendar_id =   gtk_widget_get_name(b);
+    char * sql;
+    sql = (char *) malloc(100 *sizeof(char)); // Allocation d'une variable
+    strcpy(sql, "SELECT name FROM Calendar WHERE id="); // Ajoute le début de la requête sql dans la variable
+    strcat(sql, btn_calendar_id);
+    sqlite3_exec(db, sql, print_label_calendar_name, 0, &err_msg); // Execute la requête sql
+    free(sql);
+
 }
 
 void    on_btn_delete_clicked(GtkWidget *b){
-    const gchar *btnId =   gtk_widget_get_name(b);
+    btn_calendar_id =   gtk_widget_get_name(b);
     char * sql;
     sql = (char *) malloc(100 *sizeof(char)); // Allocation d'une variable
     strcpy(sql, "DELETE FROM Calendar WHERE id="); // Ajoute le début de la requête sql dans la variable
-    strcat(sql, btnId);
+    strcat(sql, btn_calendar_id);
     sqlite3_exec(db, sql, NULL, 0, &err_msg); // Execute la requête sql
     free(sql);
-    refresh();
+    refresh_menu();
 }
 
 void    on_btn_create_clicked(){
@@ -289,9 +307,9 @@ void    on_btn_create_clicked(){
         strcat(sql, getEntry); // Ajoute la valeur dans la requête sql
         strcat(sql, "')"); // Ajoute la parenthèse fermante de la requête sql
 
-        sqlite3_exec(db, sql, NULL, 0,&err_msg); // Execute la requête sql et envoie le résultat à la fonction "refresh"
+        sqlite3_exec(db, sql, NULL, 0,&err_msg); // Execute la requête sql et envoie le résultat à la fonction "refresh_menu"
         free(sql);
-        refresh();
+        refresh_menu();
 
         gtk_editable_delete_text(GTK_EDITABLE(entry), 0, -1);
         on_btn_cancel_clicked();
@@ -335,6 +353,11 @@ void    on_btn_validate_export_clicked(){
 }
 
 
+void    on_btn_menu_calendar_clicked(){
+    gtk_widget_hide(window);
+    main_menu();
+}
+
 void    on_btn_next_year_clicked(){
     year++;
     refresh_calendar();
@@ -344,8 +367,22 @@ void    on_btn_previous_year_clicked(){
     refresh_calendar();
 }
 void    on_btn_next_month_clicked(){
-    printf("%s", month_name[month_id]);
+    if(month_id == 11){
+        year++;
+        month_id = 0;
+    }
+    else
+        month_id++;
+
+    refresh_calendar();
 }
 void    on_btn_previous_month_clicked(){
-    printf("%s", month_name[month_id]);
+    if(month_id == 0){
+        year--;
+        month_id = 11;
+    }
+    else
+        month_id--;
+
+    refresh_calendar();
 }
