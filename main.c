@@ -21,6 +21,22 @@ CURL *curl;
 char *err_msg = 0;
 int rc;
 
+int year, month_id;
+char month_name[12][9] = {
+        "Janvier",
+        "Février",
+        "Mars",
+        "Avril",
+        "Mai",
+        "Juin",
+        "Juillet",
+        "Août",
+        "Septembre",
+        "Octobre",
+        "Novembre",
+        "Décembre"
+};
+
 void    on_btn_delete_clicked(GtkWidget *b);
 void    on_btn_overview_clicked();
 void    on_btn_export_clicked(GtkWidget *b);
@@ -125,13 +141,14 @@ void main_menu(){
 
 
 
-
+// TODO : Libcurl function ( don't understand anything from this **** )
 size_t got_data(char *buffer, size_t itemsize, size_t nitems, void* ignorethis){
     size_t bytes = itemsize * nitems;
     int linenumber = 0;
     //printf("New chunk (%zu bytes)\n", bytes);
     //printf("%d\t", linenumber);
     for (int i = 0; i < bytes; ++i) {
+
         if (linenumber == 20){
             printf("%c", buffer[i]);
             if (buffer[i] == '\n') break;
@@ -156,26 +173,23 @@ size_t got_data(char *buffer, size_t itemsize, size_t nitems, void* ignorethis){
 }
 
 
+void refresh_calendar(){
+    GtkWidget *label_year = GTK_WIDGET(gtk_builder_get_object(builder, "label_year"));
+    GtkWidget *label_month = GTK_WIDGET(gtk_builder_get_object(builder, "label_month"));
+
+    //gtk_label_set_text(GTK_LABEL(label_year), (const gchar*)year);
+    //gtk_label_set_text(GTK_LABEL(label_month), month_name[month_id]);
+
+    gtk_widget_show_all(window);
+}
+
 void main_calendar() {
     printf("Show calendar\n");
 
+    year = 2021;
+    month_id = 11;
+
     curl = curl_easy_init();
-    int year;
-    int month_id;
-    char month_name[12][9] = {
-            "Janvier",
-            "Février",
-            "Mars",
-            "Avril",
-            "Mai",
-            "Juin",
-            "Juillet",
-            "Août",
-            "Septembre",
-            "Octobre",
-            "Novembre",
-            "Décembre"
-    };
 
     if(curl){
         curl_easy_setopt(curl, CURLOPT_URL, "https://www.calendardate.com/todays.htm");
@@ -185,16 +199,11 @@ void main_calendar() {
         curl_easy_cleanup(curl);
     }
 
-
-
-
-
-
     builder = gtk_builder_new_from_file("Calendar.glade");
 
     window = GTK_WIDGET(gtk_builder_get_object(builder, "window_calendar"));
 
-    gtk_widget_show_all(window);
+    refresh_calendar();
 
     g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
@@ -323,4 +332,20 @@ void    on_btn_validate_export_clicked(){
         free(getFileName);
         fclose(save_file);
     }
+}
+
+
+void    on_btn_next_year_clicked(){
+    year++;
+    refresh_calendar();
+}
+void    on_btn_previous_year_clicked(){
+    year--;
+    refresh_calendar();
+}
+void    on_btn_next_month_clicked(){
+    printf("%s", month_name[month_id]);
+}
+void    on_btn_previous_month_clicked(){
+    printf("%s", month_name[month_id]);
 }
