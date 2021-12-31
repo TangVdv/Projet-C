@@ -8,7 +8,6 @@
       <object class="GtkBox">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="vexpand">True</property>
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkMenuBar">
@@ -168,7 +167,7 @@
           </packing>
         </child>
         <child>
-          <!-- n-columns=7 n-rows=5 -->
+          <!-- n-columns=7 n-rows=4 -->
           <object class="GtkGrid">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
@@ -179,7 +178,7 @@
             <property name="row-spacing">10</property>
             <property name="column-spacing">10</property>
             <child>
-              <object class="GtkButton" id="day1">
+              <object class="GtkButton">
                 <property name="label" translatable="yes">button</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
@@ -564,54 +563,12 @@
                 <property name="receives-default">True</property>
                 <property name="hexpand">True</property>
                 <property name="vexpand">True</property>
+                <signal name="clicked" handler="on_day_clicked" swapped="no"/>
               </object>
               <packing>
                 <property name="left-attach">6</property>
                 <property name="top-attach">3</property>
               </packing>
-            </child>
-            <child>
-              <object class="GtkButton">
-                <property name="label" translatable="yes">button</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">True</property>
-                <property name="hexpand">True</property>
-                <property name="vexpand">True</property>
-              </object>
-              <packing>
-                <property name="left-attach">0</property>
-                <property name="top-attach">4</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkButton">
-                <property name="label" translatable="yes">button</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">True</property>
-                <property name="hexpand">True</property>
-                <property name="vexpand">True</property>
-              </object>
-              <packing>
-                <property name="left-attach">1</property>
-                <property name="top-attach">4</property>
-              </packing>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
             </child>
           </object>
           <packing>

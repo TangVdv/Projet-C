@@ -16,7 +16,7 @@ int main(int argc, char **argv){
 
     gtk_init(&argc, &argv);
 
-    builder = gtk_builder_new_from_file("InterfaceM30_BIS.glade");
+    builder = gtk_builder_new_from_file("InterfaceM28_CLEAN.glade");
 
     window = GTK_WIDGET(gtk_builder_get_object(builder, "window"));
 
