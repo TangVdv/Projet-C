@@ -34,15 +34,14 @@ void show_calendar(){
             strncat(btn_name, "_", 10);
             charValue = j+'0';
             strncat(btn_name, &charValue, 10);
-            printf("%s\n", btn_name);
 
-            btn_calendar_day = gtk_button_new_with_label("label");
+            btn_calendar_day = gtk_button_new_with_label(btn_value);
             gtk_widget_set_hexpand(btn_calendar_day, TRUE);
             gtk_widget_set_vexpand(btn_calendar_day, TRUE);
-            //gtk_widget_set_name(btn_calendar_day, btn_name);
-            //g_signal_connect(G_OBJECT(btn_calendar_day), "clicked", G_CALLBACK(on_day_clicked), NULL);
+            gtk_widget_set_name(btn_calendar_day, btn_name);
+            g_signal_connect(G_OBJECT(btn_calendar_day), "clicked", G_CALLBACK(on_day_clicked), NULL);
 
-            gtk_grid_attach(GTK_GRID(grid), btn_calendar_day, i,j, 20, 10);
+            gtk_grid_attach(GTK_GRID(grid), btn_calendar_day, i,j, 1, 1);
 
             free(btn_name);
         }
