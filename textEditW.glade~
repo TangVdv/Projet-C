@@ -170,8 +170,6 @@
           <object class="GtkScrolledWindow">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="margin-left">50</property>
-            <property name="margin-right">50</property>
             <property name="shadow-type">in</property>
             <child>
               <object class="GtkViewport">
@@ -198,8 +196,6 @@
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
-            <property name="margin-left">50</property>
-            <property name="margin-right">50</property>
           </object>
           <packing>
             <property name="expand">False</property>
