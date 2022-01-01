@@ -8,24 +8,19 @@ GtkWidget *saveButton;
 GtkWidget *textview;
 GtkWidget *btn_calendar_day;
 GtkTextBuffer *textbuffer;
-const gchar *btn_id;
+GtkWidget *btn_id;
 const gchar *btn_value = "";
+int thatThingHappened = 0;
 
 char tmp[1024]; //Variable for textview
 
 void on_day_clicked (GtkWidget *b);
 
-void show_calendar(){
-    builder = gtk_builder_new_from_file("InterfaceM30_BIS.glade");
-
-    window = GTK_WIDGET(gtk_builder_get_object(builder, "window"));
-    gtk_window_set_default_size(GTK_WINDOW(window), 700, 700);
-
-    g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
-
+void show_day(){
     GtkWidget *grid = GTK_WIDGET(gtk_builder_get_object(builder, "grid_calendar"));
     char *btn_name;
     char charValue = '0';
+    /*
     for (int i = 0; i < 4; ++i) {
         for (int j = 0; j < 7; ++j) {
             btn_name = (char *) malloc(10 *sizeof(char));
@@ -35,7 +30,7 @@ void show_calendar(){
             charValue = j+'0';
             strncat(btn_name, &charValue, 10);
 
-            btn_calendar_day = gtk_button_new_with_label(btn_value);
+            btn_calendar_day = gtk_button_new();
             gtk_widget_set_hexpand(btn_calendar_day, TRUE);
             gtk_widget_set_vexpand(btn_calendar_day, TRUE);
             gtk_widget_set_name(btn_calendar_day, btn_name);
@@ -46,9 +41,29 @@ void show_calendar(){
             free(btn_name);
         }
     }
+     */
+}
+
+void show_calendar(){
+    builder = gtk_builder_new_from_file("InterfaceM30_BIS.glade");
+
+    window = GTK_WIDGET(gtk_builder_get_object(builder, "window"));
+    gtk_window_set_default_size(GTK_WINDOW(window), 700, 700);
+
+    g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+
     gtk_builder_connect_signals(builder, NULL);
 
+    show_day();
+
     gtk_widget_show_all(window);
+
+    if (btn_id != NULL) {
+        gtk_button_set_label(GTK_BUTTON(btn_id), btn_value);
+        printf("btn_id : %s\n", gtk_button_get_label(GTK_BUTTON(btn_id)));
+        printf("btn_value : %s\n", btn_value);
+        gtk_widget_show(btn_id);
+    }
 }
 
 void show_text_edit(){
@@ -85,8 +100,11 @@ int main(int argc, char **argv){
 void on_day_clicked (GtkWidget *b){
     //printf("Test");
     gtk_widget_hide(window);
-    btn_id = gtk_widget_get_name(GTK_WIDGET(b));
-    btn_value = gtk_button_get_label(GTK_BUTTON(b));
+    btn_id = b;
+    //btn_id = gtk_widget_get_name(GTK_WIDGET(b));
+
+    if ( gtk_button_get_label(GTK_BUTTON(b)) != NULL)
+        btn_value = gtk_button_get_label(GTK_BUTTON(b));
 
     show_text_edit();
 }
