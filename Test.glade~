@@ -12,13 +12,20 @@
     <property name="can_focus">False</property>
     <property name="type_hint">dialog</property>
     <child type="titlebar">
-      <placeholder/>
+      <object class="GtkLabel" id="label_title_export">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">Exporter</property>
+        <attributes>
+          <attribute name="weight" value="bold"/>
+          <attribute name="foreground" value="#000000000000"/>
+        </attributes>
+      </object>
     </child>
     <child internal-child="vbox">
       <object class="GtkBox">
         <property name="can_focus">False</property>
         <property name="orientation">vertical</property>
-        <property name="spacing">25</property>
         <child internal-child="action_area">
           <object class="GtkButtonBox">
             <property name="can_focus">False</property>
@@ -67,6 +74,7 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">False</property>
+            <property name="padding">10</property>
             <property name="position">0</property>
           </packing>
         </child>
@@ -87,6 +95,7 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
+            <property name="padding">15</property>
             <property name="position">2</property>
           </packing>
         </child>
@@ -99,6 +108,7 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">False</property>
+            <property name="padding">10</property>
             <property name="position">3</property>
           </packing>
         </child>
@@ -112,6 +122,7 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">False</property>
+            <property name="padding">15</property>
             <property name="position">4</property>
           </packing>
         </child>
@@ -122,13 +133,20 @@
     <property name="can_focus">False</property>
     <property name="type_hint">dialog</property>
     <child type="titlebar">
-      <placeholder/>
+      <object class="GtkLabel" id="label_title_import">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">Importer</property>
+        <attributes>
+          <attribute name="weight" value="bold"/>
+          <attribute name="foreground" value="#000000000000"/>
+        </attributes>
+      </object>
     </child>
     <child internal-child="vbox">
       <object class="GtkBox">
         <property name="can_focus">False</property>
         <property name="orientation">vertical</property>
-        <property name="spacing">2</property>
         <child internal-child="action_area">
           <object class="GtkButtonBox">
             <property name="can_focus">False</property>
@@ -177,7 +195,7 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="padding">28</property>
+            <property name="padding">10</property>
             <property name="position">1</property>
           </packing>
         </child>
@@ -190,6 +208,7 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
+            <property name="padding">15</property>
             <property name="position">2</property>
           </packing>
         </child>
@@ -200,13 +219,20 @@
     <property name="can_focus">False</property>
     <property name="type_hint">dialog</property>
     <child type="titlebar">
-      <placeholder/>
+      <object class="GtkLabel" id="label_title_login">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">Se connecter</property>
+        <attributes>
+          <attribute name="weight" value="bold"/>
+          <attribute name="foreground" value="#000000000000"/>
+        </attributes>
+      </object>
     </child>
     <child internal-child="vbox">
       <object class="GtkBox">
         <property name="can_focus">False</property>
         <property name="orientation">vertical</property>
-        <property name="spacing">4</property>
         <child internal-child="action_area">
           <object class="GtkButtonBox">
             <property name="can_focus">False</property>
@@ -247,20 +273,6 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel" id="label_title_login">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="label" translatable="yes">
-Se connecter
-</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkLabel" id="label_name_login">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
@@ -269,7 +281,7 @@ Se connecter
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="padding">5</property>
+            <property name="padding">10</property>
             <property name="position">1</property>
           </packing>
         </child>
@@ -285,7 +297,7 @@ Se connecter
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="padding">13</property>
+            <property name="padding">15</property>
             <property name="position">2</property>
           </packing>
         </child>
@@ -298,6 +310,7 @@ Se connecter
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
+            <property name="padding">10</property>
             <property name="position">4</property>
           </packing>
         </child>
@@ -305,11 +318,12 @@ Se connecter
           <object class="GtkEntry" id="entry_password_login">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
+            <property name="margin_bottom">20</property>
           </object>
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="padding">16</property>
+            <property name="padding">15</property>
             <property name="position">5</property>
           </packing>
         </child>
@@ -320,13 +334,20 @@ Se connecter
     <property name="can_focus">False</property>
     <property name="type_hint">dialog</property>
     <child type="titlebar">
-      <placeholder/>
+      <object class="GtkLabel" id="label_title_new">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">Créer un calendrier</property>
+        <attributes>
+          <attribute name="weight" value="bold"/>
+          <attribute name="foreground" value="#000000000000"/>
+        </attributes>
+      </object>
     </child>
     <child internal-child="vbox">
       <object class="GtkBox">
         <property name="can_focus">False</property>
         <property name="orientation">vertical</property>
-        <property name="spacing">2</property>
         <child internal-child="action_area">
           <object class="GtkButtonBox">
             <property name="can_focus">False</property>
@@ -375,7 +396,7 @@ Se connecter
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="padding">28</property>
+            <property name="padding">10</property>
             <property name="position">1</property>
           </packing>
         </child>
@@ -391,6 +412,7 @@ Se connecter
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
+            <property name="padding">15</property>
             <property name="position">2</property>
           </packing>
         </child>
@@ -401,7 +423,15 @@ Se connecter
     <property name="can_focus">False</property>
     <property name="type_hint">dialog</property>
     <child type="titlebar">
-      <placeholder/>
+      <object class="GtkLabel" id="label_title_register">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">S'enregistrer</property>
+        <attributes>
+          <attribute name="weight" value="bold"/>
+          <attribute name="foreground" value="#000000000000"/>
+        </attributes>
+      </object>
     </child>
     <child internal-child="vbox">
       <object class="GtkBox">
@@ -444,20 +474,6 @@ Se connecter
           <packing>
             <property name="expand">False</property>
             <property name="fill">False</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="label_title_register">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="label" translatable="yes">
-S'inscrire
-</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
             <property name="position">0</property>
           </packing>
         </child>
@@ -524,7 +540,7 @@ S'inscrire
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <child>
-          <object class="GtkMenuItem">
+          <object class="GtkMenuItem" id="fichier">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="label" translatable="yes">_Fichier</property>
@@ -558,13 +574,21 @@ S'inscrire
                   </object>
                 </child>
                 <child>
+                  <object class="GtkMenuItem" id="logout">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">Déconnexion</property>
+                    <signal name="activate" handler="on_logout_activate" swapped="no"/>
+                  </object>
+                </child>
+                <child>
                   <object class="GtkSeparatorMenuItem">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                   </object>
                 </child>
                 <child>
-                  <object class="GtkMenuItem" id="exit">
+                  <object class="GtkMenuItem" id="exit_fichier">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="label" translatable="yes">Quitter</property>
@@ -576,7 +600,7 @@ S'inscrire
           </object>
         </child>
         <child>
-          <object class="GtkMenuItem">
+          <object class="GtkMenuItem" id="compte">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="label" translatable="yes">Compte</property>
@@ -598,6 +622,20 @@ S'inscrire
                     <property name="can_focus">False</property>
                     <property name="label" translatable="yes">Créer un compte</property>
                     <signal name="activate" handler="on_register_activate" swapped="no"/>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkSeparatorMenuItem">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkMenuItem" id="exit_compte">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">Quitter</property>
+                    <signal name="activate" handler="on_exit_activate" swapped="no"/>
                   </object>
                 </child>
               </object>

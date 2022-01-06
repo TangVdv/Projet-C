@@ -11,6 +11,8 @@ GtkWidget *calendar_frame;
 GtkWidget *dialog;
 GtkWidget *entry;
 GtkWidget *fileChooser;
+GtkWidget *fichierMenuItem;
+GtkWidget *compteMenuItem;
 GtkTreeIter iter;
 GtkTreePath *path;
 GtkListStore *ListStore;
@@ -22,6 +24,12 @@ char *err_msg = 0;
 int rc;
 const gchar *btn_calendar_id;
 
+char *getEntry_username, *getEntry_password;
+
+
+int user_id = -1;
+char str_id[10];
+int user_type = -1;
 int year, month_id;
 char month_name[12][10] = {
         "Janvier",
@@ -103,7 +111,6 @@ int refresh_menu_callback(void *NotUsed, int rowCount, char **rowValue, char **r
     gtk_container_add (GTK_CONTAINER (calendar_frame), box_btn_calendar);
     gtk_widget_set_hexpand(box_btn_calendar, TRUE);
     gtk_widget_set_vexpand(box_btn_calendar, TRUE);
-    gtk_widget_show_all(window);
 
     return 0;
 }
@@ -112,12 +119,26 @@ void refresh_menu(){
     GList *children, *iter;
     // TODO : Understand and comment this shit
     children = gtk_container_get_children(GTK_CONTAINER(calendar_frame));
-    for(iter = children; iter != NULL; iter = g_list_next(iter))
+    for (iter = children; iter != NULL; iter = g_list_next(iter))
         gtk_widget_destroy(GTK_WIDGET(iter->data));
     g_list_free(children);
 
-    char *sql = "SELECT * FROM Calendar"; // Création d'une requête sql
-    sqlite3_exec(db, sql, refresh_menu_callback, 0, &err_msg); // Execute la requête sql et envoie le résultat à la fonction "refresh_menu_callback"
+    if (user_id >= 0) {
+        sprintf(str_id, "%d", user_id);
+        char *sql = build_sql("SELECT * FROM Calendar WHERE user_id = ", str_id); // Création d'une requête sql
+        sqlite3_exec(db, sql, refresh_menu_callback, 0,
+                     &err_msg); // Execute la requête sql et envoie le résultat à la fonction "refresh_menu_callback"
+
+        gtk_widget_show_all(window);
+
+        gtk_widget_set_visible(compteMenuItem, FALSE);
+        gtk_widget_set_visible(fichierMenuItem, TRUE);
+    }
+    else {
+        gtk_widget_show_all(window);
+        gtk_widget_set_visible(fichierMenuItem, FALSE);
+        gtk_widget_set_visible(compteMenuItem, TRUE);
+    }
 }
 
 int print_combobox(void *NotUsed, int rowCount, char **rowValue, char **rowName){
@@ -140,10 +161,12 @@ void main_menu(){
 
     calendar_frame = GTK_WIDGET(gtk_builder_get_object(builder, "Calendar_btn_grid"));
     ListStore = GTK_LIST_STORE(gtk_builder_get_object(builder, "ListStore"));
-    refresh_menu();
+    ListStore = GTK_LIST_STORE(gtk_builder_get_object(builder, "ListStore"));
+    fichierMenuItem = GTK_WIDGET(gtk_builder_get_object(builder, "fichier"));
+    compteMenuItem = GTK_WIDGET(gtk_builder_get_object(builder, "compte"));
+    gtk_widget_show_all(window);
 
-    char *sql = "select name from Calendar"; // Création d'une requête sql
-    sqlite3_exec(db, sql, print_combobox, 0, &err_msg); // Execute la requête sql et envoie le résultat à la fonction "print_combobox"
+    refresh_menu();
 
 }
 
@@ -252,6 +275,9 @@ int main(int argc, char **argv){
     return 0;
 }
 
+void    on_btn_cancel_clicked(){
+    gtk_widget_hide(dialog);
+}
 
 void    on_new_activate(){
     dialog = GTK_WIDGET(gtk_builder_get_object(builder, "dialog_new"));
@@ -268,6 +294,8 @@ void    on_import_activate(){
 void    on_export_activate(){
     dialog = GTK_WIDGET(gtk_builder_get_object(builder, "dialog_export"));
     gtk_window_set_default_size(GTK_WINDOW(dialog), 400, 300);
+    char *sql = "select name from Calendar"; // Création d'une requête sql
+    sqlite3_exec(db, sql, print_combobox, 0, &err_msg); // Execute la requête sql et envoie le résultat à la fonction "print_combobox"
     gtk_widget_show(dialog);
 
 }
@@ -276,33 +304,105 @@ void    on_exit_activate(){
     gtk_main_quit();
 }
 
+void    on_logout_activate(){
+    user_id = -1;
+    user_type = -1;
+    refresh_menu();
+}
 
-int check_login_exist_callback(void *NotUsed, int rowCount, char **rowValue, char **rowName){
-    //if(rowValue[0] == "1")
-        printf("%s", rowValue[0]);
+// /LOGIN
 
+int check_login_exist_callback(void *NotUsed, int rowCount, char **rowValue, char **rowName) {
+    if (rowCount == 0 ){
+        printf("Incorrect");
+        return 1;
+    }
+    else{
+        user_id = atoi(rowValue[0]);
+        user_type = atoi(rowValue[2]);
+        refresh_menu();
+    }
+}
 
+void login(){
+    char *sql = build_sql(
+            build_sql(
+                    build_sql(
+                            build_sql(
+                                    "SELECT id,name,type FROM Account GROUP BY id HAVING COUNT(id) = 1 AND name='", getEntry_username),
+                            "' AND password='"),
+                    getEntry_password),
+            "'");
+
+    sqlite3_exec(db, sql, check_login_exist_callback, 0,&err_msg); // Execute la requête sql et envoie le résultat à la fonction "refresh_menu"
+    on_btn_cancel_clicked();
 }
 
 void    on_login_activate(){
     dialog = GTK_WIDGET(gtk_builder_get_object(builder, "dialog_login"));
     gtk_window_set_default_size(GTK_WINDOW(dialog), 400, 300);
     gtk_widget_show(dialog);
+}
 
+void    on_btn_login_clicked(){
+    entry = GTK_WIDGET(gtk_builder_get_object(builder, "entry_name_login"));
+    getEntry_username = gtk_editable_get_chars(GTK_EDITABLE(entry), 0, -1);
+    if (strcmp(getEntry_username, "") == 0) return;
+    gtk_editable_delete_text(GTK_EDITABLE(entry), 0, -1);
+    entry = GTK_WIDGET(gtk_builder_get_object(builder, "entry_password_login"));
+    getEntry_password = gtk_editable_get_chars(GTK_EDITABLE(entry), 0, -1);
+    if (strcmp(getEntry_password, "") == 0) return;
+    gtk_editable_delete_text(GTK_EDITABLE(entry), 0, -1);
+
+    login();
+}
+
+//  LOGIN\
+
+//  /REGISTER
+
+int check_if_user_exist(void *NotUsed, int rowCount, char **rowValue, char **rowName){
+    if (rowCount == 0){
+        char *sql = build_sql(
+                build_sql(
+                        build_sql(
+                                build_sql(
+                                        "INSERT INTO Account(name, password) VALUES('", getEntry_username),
+                                "','"),
+                        getEntry_password),
+                "')");
+        sqlite3_exec(db, sql, NULL, 0,&err_msg); // Execute la requête sql et envoie le résultat à la fonction "refresh_menu"
+        login();
+    }
+    else {
+        printf("user already exist\n");
+        return 0;
+    }
 }
 
 void    on_register_activate(){
     dialog = GTK_WIDGET(gtk_builder_get_object(builder, "dialog_register"));
     gtk_window_set_default_size(GTK_WINDOW(dialog), 400, 300);
     gtk_widget_show(dialog);
-
 }
 
+void    on_btn_register_clicked(){
+    entry = GTK_WIDGET(gtk_builder_get_object(builder, "entry_name_register"));
+    getEntry_username = gtk_editable_get_chars(GTK_EDITABLE(entry), 0, -1);
+    if (strcmp(getEntry_username, "") == 0) return;
+    gtk_editable_delete_text(GTK_EDITABLE(entry), 0, -1);
+    entry = GTK_WIDGET(gtk_builder_get_object(builder, "entry_password_register"));
+    getEntry_password = gtk_editable_get_chars(GTK_EDITABLE(entry), 0, -1);
+    if (strcmp(getEntry_password, "") == 0) return;
+    gtk_editable_delete_text(GTK_EDITABLE(entry), 0, -1);
+    char *sql = build_sql(build_sql("SELECT COUNT() FROM Account WHERE name='", getEntry_username),"'");
 
+    sqlite3_exec(db, sql, check_if_user_exist, 0,&err_msg); // Execute la requête sql et envoie le résultat à la fonction "refresh_menu"
 
-void    on_btn_cancel_clicked(){
-    gtk_widget_hide(dialog);
+    on_btn_cancel_clicked();
 }
+
+//  REGISTER\
 
 void    on_btn_overview_clicked(GtkWidget *b){
     gtk_widget_hide(window);
@@ -330,21 +430,22 @@ void    on_btn_delete_clicked(GtkWidget *b){
 }
 
 void    on_btn_create_clicked(){
-    entry = GTK_WIDGET(gtk_builder_get_object(builder, "entry_new_name"));
-    char *getEntry = gtk_editable_get_chars(GTK_EDITABLE(entry), 0, -1);
-    if (strcmp(getEntry, "") != 0) {
-        char * sql;
-        sql = (char *) malloc(100 *sizeof(char)); // Allocation d'une variable
-        strcpy(sql, "INSERT INTO Calendar(name) VALUES('"); // Ajoute le début de la requête sql dans la variable
-        strcat(sql, getEntry); // Ajoute la valeur dans la requête sql
-        strcat(sql, "')"); // Ajoute la parenthèse fermante de la requête sql
+    if (user_id >= 0){
+        entry = GTK_WIDGET(gtk_builder_get_object(builder, "entry_new_name"));
+        char *getEntry = gtk_editable_get_chars(GTK_EDITABLE(entry), 0, -1);
+        if (strcmp(getEntry, "") != 0) {
+            sprintf(str_id, "%d", user_id);
+            char *sql = build_sql(
+                    build_sql(build_sql(build_sql("INSERT INTO Calendar(name, user_id) VALUES('", getEntry), "','"),
+                              str_id), "')");
 
-        sqlite3_exec(db, sql, NULL, 0,&err_msg); // Execute la requête sql et envoie le résultat à la fonction "refresh_menu"
-        free(sql);
-        refresh_menu();
+            sqlite3_exec(db, sql, NULL, 0,
+                         &err_msg); // Execute la requête sql et envoie le résultat à la fonction "refresh_menu"
+            refresh_menu();
 
-        gtk_editable_delete_text(GTK_EDITABLE(entry), 0, -1);
-        on_btn_cancel_clicked();
+            gtk_editable_delete_text(GTK_EDITABLE(entry), 0, -1);
+            on_btn_cancel_clicked();
+        }
     }
 }
 
@@ -381,49 +482,6 @@ void    on_btn_validate_export_clicked(){
         sqlite3_exec(db, sql, export_callback, 0, &err_msg); // Execute la requête sql et envoie le résultat à la fonction "export_callback"
         free(getFileName);
         fclose(save_file);
-    }
-}
-
-void    on_btn_login_clicked(){
-    entry = GTK_WIDGET(gtk_builder_get_object(builder, "entry_name_login"));
-    char *getEntry_username = gtk_editable_get_chars(GTK_EDITABLE(entry), 0, -1);
-    if (strcmp(getEntry_username, "") == 0) return;
-    entry = GTK_WIDGET(gtk_builder_get_object(builder, "entry_password_login"));
-    char *getEntry_password = gtk_editable_get_chars(GTK_EDITABLE(entry), 0, -1);
-    if (strcmp(getEntry_password, "") == 0) return;
-
-    char * sql = build_sql(
-                    build_sql(
-                        build_sql(
-                            build_sql(
-                            "SELECT COUNT() FROM Account WHERE name='", getEntry_username),
-                        "'AND password='"),
-                    getEntry_password),
-                 "'");
-
-    printf("%sql : %s", sql);
-    sqlite3_exec(db, sql, check_login_exist_callback, 0,&err_msg); // Execute la requête sql et envoie le résultat à la fonction "refresh_menu"
-    refresh_menu();
-
-    on_btn_cancel_clicked();
-}
-
-void    on_btn_register_clicked(){
-    entry = GTK_WIDGET(gtk_builder_get_object(builder, "entry_new_name"));
-    char *getEntry = gtk_editable_get_chars(GTK_EDITABLE(entry), 0, -1);
-    if (strcmp(getEntry, "") != 0) {
-        char * sql;
-        sql = (char *) malloc(100 *sizeof(char)); // Allocation d'une variable
-        strcpy(sql, "INSERT INTO Calendar(name) VALUES('"); // Ajoute le début de la requête sql dans la variable
-        strcat(sql, getEntry); // Ajoute la valeur dans la requête sql
-        strcat(sql, "')"); // Ajoute la parenthèse fermante de la requête sql
-
-        sqlite3_exec(db, sql, NULL, 0,&err_msg); // Execute la requête sql et envoie le résultat à la fonction "refresh_menu"
-        free(sql);
-        refresh_menu();
-
-        gtk_editable_delete_text(GTK_EDITABLE(entry), 0, -1);
-        on_btn_cancel_clicked();
     }
 }
 
