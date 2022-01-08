@@ -12,7 +12,11 @@ GtkWidget *btn_id;
 const gchar *btn_value = "";
 int thatThingHappened = 0;
 
+GtkWidget *dayTwo;
+
 char tmp[1024]; //Variable for textview
+
+char *textTest = "aaa";
 
 void on_day_clicked (GtkWidget *b);
 
@@ -54,16 +58,25 @@ void show_calendar(){
 
     gtk_builder_connect_signals(builder, NULL);
 
-    show_day();
+    //show_day();
 
+    dayTwo = GTK_WIDGET(gtk_builder_get_object(builder, "Day 2"));
+
+    gtk_button_set_label(GTK_BUTTON(dayTwo), "Lundi\n    1");
     gtk_widget_show_all(window);
 
+    /*
     if (btn_id != NULL) {
+        //gtk_widget_hide(btn_id);
+        gtk_widget_hide(dayTwo);
         gtk_button_set_label(GTK_BUTTON(btn_id), btn_value);
-        printf("btn_id : %s\n", gtk_button_get_label(GTK_BUTTON(btn_id)));
+        printf("btn_label : %s\n", gtk_button_get_label(GTK_BUTTON(btn_id)));
         printf("btn_value : %s\n", btn_value);
+
+        //gtk_button_set_label(GTK_BUTTON(btn_id), textTest);
         gtk_widget_show(btn_id);
     }
+     */
 }
 
 void show_text_edit(){
