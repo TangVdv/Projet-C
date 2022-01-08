@@ -187,6 +187,32 @@
           </packing>
         </child>
         <child>
+          <object class="GtkLabel" id="label_name_import">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="label" translatable="yes">Nom</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="padding">10</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="entry_name_import">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="input_purpose">name</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="padding">15</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
           <object class="GtkLabel" id="label_file_import">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
@@ -196,7 +222,7 @@
             <property name="expand">False</property>
             <property name="fill">True</property>
             <property name="padding">10</property>
-            <property name="position">1</property>
+            <property name="position">3</property>
           </packing>
         </child>
         <child>
@@ -209,7 +235,7 @@
             <property name="expand">False</property>
             <property name="fill">True</property>
             <property name="padding">15</property>
-            <property name="position">2</property>
+            <property name="position">4</property>
           </packing>
         </child>
       </object>
@@ -293,6 +319,7 @@
             <property name="vexpand">True</property>
             <property name="max_length">50</property>
             <property name="width_chars">5</property>
+            <property name="input_purpose">name</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -319,6 +346,10 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="margin_bottom">20</property>
+            <property name="visibility">False</property>
+            <property name="invisible_char">*</property>
+            <property name="input_purpose">password</property>
+            <property name="input_hints">GTK_INPUT_HINT_INHIBIT_OSK | GTK_INPUT_HINT_NONE</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -408,6 +439,7 @@
             <property name="vexpand">True</property>
             <property name="max_length">50</property>
             <property name="width_chars">5</property>
+            <property name="input_purpose">name</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -498,6 +530,7 @@
             <property name="vexpand">True</property>
             <property name="max_length">50</property>
             <property name="width_chars">5</property>
+            <property name="input_purpose">name</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -522,6 +555,8 @@
           <object class="GtkEntry" id="entry_password_register">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
+            <property name="input_purpose">password</property>
+            <property name="input_hints">GTK_INPUT_HINT_INHIBIT_OSK | GTK_INPUT_HINT_NONE</property>
           </object>
           <packing>
             <property name="expand">False</property>

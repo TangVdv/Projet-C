@@ -263,6 +263,23 @@ void    on_logout_activate(){
 }
 
 
+// HASH PASSWORD
+// TODO: REGLER ERREUR DE SEGMENTATION
+
+char *hash_pwd(char *password){
+    size_t size = strlen(password);
+    char *value = malloc(size + 1);
+    char *hash_password = malloc(size + 1);
+    strcpy(hash_password, "");
+    for(int i = 0; i < strlen(password); i++) {
+        sprintf(value, "%0x", password[i]);
+        strncat(hash_password, value, size);
+        sprintf(value, "%u", password[i]);
+        strncat(hash_password, value, size);
+    }
+    return hash_password;
+}
+
 
 // /LOGIN
 
@@ -308,6 +325,8 @@ void    on_btn_login_clicked(){
     if (strcmp(getEntry_password, "") == 0) return;
     gtk_editable_delete_text(GTK_EDITABLE(entry), 0, -1);
 
+    getEntry_password = hash_pwd(getEntry_password);
+
     login();
 }
 
@@ -318,7 +337,7 @@ void    on_btn_login_clicked(){
 //  /REGISTER
 
 int check_if_user_exist(void *NotUsed, int rowCount, char **rowValue, char **rowName){
-    if (rowCount == 0){
+    if (strcmp(rowValue[0], "0") == 0){
         char *sql = build_sql(
                 build_sql(
                         build_sql(
@@ -331,7 +350,7 @@ int check_if_user_exist(void *NotUsed, int rowCount, char **rowValue, char **row
         login();
     }
     else {
-        printf("user already exist\n");
+        printf("user '%s' already exist\n", getEntry_username);
         return 0;
     }
 }
@@ -350,8 +369,11 @@ void    on_btn_register_clicked(){
     entry = GTK_WIDGET(gtk_builder_get_object(builder, "entry_password_register"));
     getEntry_password = gtk_editable_get_chars(GTK_EDITABLE(entry), 0, -1);
     if (strcmp(getEntry_password, "") == 0) return;
+
     gtk_editable_delete_text(GTK_EDITABLE(entry), 0, -1);
     char *sql = build_sql(build_sql("SELECT COUNT() FROM Account WHERE name='", getEntry_username),"'");
+
+    getEntry_password = hash_pwd(getEntry_password);
 
     sqlite3_exec(db, sql, check_if_user_exist, 0,&err_msg); // Execute la requête sql et envoie le résultat à la fonction "refresh_menu"
 
