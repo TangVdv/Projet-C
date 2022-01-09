@@ -13,7 +13,6 @@ GtkWidget *entry;
 GtkWidget *fileChooser;
 GtkWidget *fichierMenuItem;
 GtkWidget *compteMenuItem;
-GtkWidget *day;
 GtkWidget *btn_calendar_day;
 GtkWidget *grid;
 GtkWidget *textview;
@@ -31,6 +30,7 @@ int rc;
 const gchar *btn_calendar_id;
 GtkWidget *btn_id;
 const gchar *btn_value = "";
+const char *btn_name;
 
 char tmp[1024]; //Variable for textview
 
@@ -40,12 +40,12 @@ char *getEntry_username, *getEntry_password;
 int user_id = -1;
 char str_id[10];
 int user_type = -1;
-int year, month_id;
+int year, month_id, day;
 char month_name[12][10] = {"Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre\0","Octobre","Novembre","Décembre"};
 
 void    on_btn_delete_clicked(GtkWidget *b);
 void    on_btn_overview_clicked(GtkWidget *b);
-void    on_day_clicked (GtkWidget *b);
+void    on_day_clicked (GtkWidget *click_button);
 
 
 //  BUILD SQL
@@ -108,11 +108,6 @@ void refresh_menu(){
     }
 }
 
-int print_combobox(void *NotUsed, int rowCount, char **rowValue, char **rowName){
-    gtk_list_store_append(ListStore, &iter);
-    gtk_list_store_set(ListStore, &iter, 0, rowValue[0], -1);
-}
-
 void main_menu(){
 
     builder = gtk_builder_new_from_file("Test.glade");
@@ -126,7 +121,6 @@ void main_menu(){
     gtk_builder_connect_signals(builder, NULL);
 
     calendar_frame = GTK_WIDGET(gtk_builder_get_object(builder, "Calendar_btn_grid"));
-    ListStore = GTK_LIST_STORE(gtk_builder_get_object(builder, "ListStore"));
     ListStore = GTK_LIST_STORE(gtk_builder_get_object(builder, "ListStore"));
     fichierMenuItem = GTK_WIDGET(gtk_builder_get_object(builder, "fichier"));
     compteMenuItem = GTK_WIDGET(gtk_builder_get_object(builder, "compte"));
@@ -175,43 +169,82 @@ size_t got_data(char *buffer, size_t itemsize, size_t nitems, void* ignorethis){
 
 int print_label_calendar_name(void *NotUsed, int rowCount, char **rowValue, char **rowName){
     GtkWidget *label_calendar_name = GTK_WIDGET(gtk_builder_get_object(builder, "label_calendar_name"));
-    //printf("%s", rowValue[0]);
     gtk_label_set_text(GTK_LABEL(label_calendar_name), rowValue[0]);
     gtk_widget_show_all(window);
 }
 
+int set_label_button(void *NotUsed, int rowCount, char **rowValue, char **rowName){
+    gtk_button_set_label(GTK_BUTTON(btn_calendar_day), rowValue[0]);
+}
+
 void refresh_calendar(){
-    char snum[4];
+    char value[11];
     GtkWidget *label_year = GTK_WIDGET(gtk_builder_get_object(builder, "label_year"));
     GtkWidget *label_month = GTK_WIDGET(gtk_builder_get_object(builder, "label_month"));
 
-
-    sprintf(snum,"%d",year);
-    gtk_label_set_text(GTK_LABEL(label_year), snum);
+    sprintf(value,"%d",year);
+    gtk_label_set_text(GTK_LABEL(label_year), value);
     gtk_label_set_text(GTK_LABEL(label_month), month_name[month_id]);
 
     grid = GTK_WIDGET(gtk_builder_get_object(builder, "grid_day"));
-    char *btn_name;
-    char charValue = '0';
-    for (int i = 0; i < 4; ++i) {
+
+    GList *children, *iter;
+    // TODO : Understand and comment this shit
+    children = gtk_container_get_children(GTK_CONTAINER(grid));
+    for (iter = children; iter != NULL; iter = g_list_next(iter))
+        gtk_widget_destroy(GTK_WIDGET(iter->data));
+    g_list_free(children);
+
+    int dayMax;
+
+    if(month_id == 1){
+        if(year%4==0 && year%100!=0 || year%400==0) dayMax = 29;
+        else dayMax = 28;
+    }
+    else {
+        if (month_id == 3 || month_id == 5 || month_id == 8 || month_id == 10)
+            dayMax = 30;
+        else
+            dayMax = 31;
+    }
+
+    day = 0;
+    for (int i = 0; i < 5; ++i) {
         for (int j = 0; j < 7; ++j) {
-            btn_name = (char *) malloc(10 *sizeof(char));
+            day += 1;
+            char *btn_name = (char *) malloc(11);
 
-            sprintf(btn_name, "%d", i);
-            strncat(btn_name, "_", 10);
-            charValue = j+'0';
-            strncat(btn_name, &charValue, 10);
+            sprintf(btn_name, "%d", year);
+            strcat(btn_name, "-");
+            sprintf(value, "%d",month_id+1);
+            strcat(btn_name, value);
+            strcat(btn_name, "-");
+            sprintf(value, "%d", day);
+            strcat(btn_name, value);
 
+
+            GtkWidget *box_btn_day = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+
+            GtkWidget *label_calendar_day = gtk_label_new(value);
             btn_calendar_day = gtk_button_new();
             gtk_widget_set_hexpand(btn_calendar_day, TRUE);
             gtk_widget_set_vexpand(btn_calendar_day, TRUE);
             gtk_widget_set_name(btn_calendar_day, btn_name);
             g_signal_connect(G_OBJECT(btn_calendar_day), "clicked", G_CALLBACK(on_day_clicked), NULL);
 
-            gtk_grid_attach(GTK_GRID(grid), btn_calendar_day, i,j, 1, 1);
+            gtk_box_pack_start(GTK_BOX(box_btn_day),label_calendar_day,0,0,0);
+            gtk_box_pack_start(GTK_BOX(box_btn_day),btn_calendar_day,1,1,0);
+
+            gtk_grid_attach(GTK_GRID(grid), box_btn_day, j,i, 1, 1);
+
+            char *sql = build_sql(build_sql(build_sql("SELECT content FROM Day WHERE date='",btn_name),"' AND calendar_id="),btn_calendar_id);
+            sqlite3_exec(db, sql, set_label_button, 0, &err_msg); // Execute la requête sql
 
             free(btn_name);
+
+            if(day == dayMax) break;
         }
+        if(day == dayMax) break;
     }
 
     gtk_widget_show_all(window);
@@ -241,19 +274,20 @@ void main_calendar() {
 
     gtk_builder_connect_signals(builder, NULL);
 
-    refresh_calendar();
-
     if (btn_id != NULL) {
+        /*
         const char *btn_name = gtk_widget_get_name(btn_id);
-        //day = GTK_WIDGET(gtk_builder_get_object(builder,  btn_name));
-        gtk_button_set_label(GTK_BUTTON(btn_id), "test");
+        gtk_button_set_label(day, "test");
+        printf("print\n");
         //printf("btn_name = %s\n", btn_name);
         //btn_calendar_day = gtk_button_new_with_label(btn_value);
-        printf("btn_label : %s\n", gtk_widget_get_name(btn_id));
+        printf("btn_label : %s\n", gtk_button_get_label(btn_id));
         printf("btn_value : %s\n", btn_value);
 
         //gtk_button_set_label(GTK_BUTTON(btn_id), textTest);
+         */
     }
+    refresh_calendar();
 }
 
 //  CALENDAR\
@@ -261,8 +295,43 @@ void main_calendar() {
 
 //  /DAY
 
+int is_day_exist(void *NotUsed, int rowCount, char **rowValue, char **rowName){
+    char *sql;
+    //printf("btn_value : %s\n", btn_value);
+    //printf("btn_name : %s\n", btn_name);
+    //printf("btn_calendar_id : %s\n", btn_calendar_id);
+    if(rowValue[1] == NULL) {
+        printf("\n\nInsert\n\n");
+        //INSERT INTO Day(content, date, calendar_id) VALUES(btn_value, btn_name, btn_calendar_id)
+        sql = build_sql(build_sql(build_sql(build_sql(
+                build_sql(build_sql("INSERT INTO Day(content, date, calendar_id) VALUES('", btn_value), "','"),
+                btn_name), "',"), btn_calendar_id), ")");
+        sqlite3_exec(db, sql, NULL, 0, &err_msg); // Execute la requête sql
+    }
+    else{
+        if(strcmp(btn_value, "") == 0){
+            printf("\n\nDelete\n\n");
+            //DELETE FROM Day WHERE id = rowValue[1]
+            sql = build_sql("DELETE FROM Day WHERE id=",rowValue[1]);
+            sqlite3_exec(db, sql, NULL, 0, &err_msg); // Execute la requête sql
+        }
+        else {
+            printf("\n\nUpdate\n\n");
+
+            //UPDATE Day SET content = btn_value WHERE id = rowValue[1]
+            sql = build_sql(build_sql(build_sql("UPDATE Day SET content='", btn_value), "' WHERE id="), rowValue[1]);
+            printf("sql : %s\n", sql);
+            sqlite3_exec(db, sql, NULL, 0, &err_msg);
+        }
+    }
+
+    main_calendar();
+}
+
 void show_text_edit(){
-    builder = gtk_builder_new_from_file("textEditW.glade");
+    gtk_widget_hide(window);
+
+    builder = gtk_builder_new_from_file("textEdit.glade");
 
     window = GTK_WIDGET(gtk_builder_get_object(builder, "window"));
     gtk_window_set_default_size(GTK_WINDOW(window), 500, 500);
@@ -281,29 +350,33 @@ void show_text_edit(){
     gtk_widget_show_all(window);
 }
 
-void on_day_clicked (GtkWidget *b){
-    //printf("Test");
+void on_day_clicked (GtkWidget *click_button){
     gtk_widget_hide(window);
-    btn_id = b;
-    //btn_id = gtk_widget_get_name(GTK_WIDGET(b));
+    btn_id = click_button;
 
-    if ( gtk_button_get_label(GTK_BUTTON(b)) != NULL)
-        btn_value = gtk_button_get_label(GTK_BUTTON(b));
+    if ( gtk_button_get_label(GTK_BUTTON(click_button)) != NULL)
+        btn_value = gtk_button_get_label(GTK_BUTTON(click_button));
+    else
+        btn_value = "";
 
+    printf("btn_value : %s\n", btn_value);
     show_text_edit();
 }
 
 void on_save_button_clicked (GtkButton *b){
     gtk_widget_hide(window);
-    //printf("Hello");
     GtkTextIter begin, end;
 
     gtk_text_buffer_get_iter_at_offset(GTK_TEXT_BUFFER(textbuffer), &begin, (gint) 0);
     gtk_text_buffer_get_iter_at_offset(GTK_TEXT_BUFFER(textbuffer), &end, (gint) -1);
 
     btn_value = gtk_text_buffer_get_text(GTK_TEXT_BUFFER(textbuffer), &begin, &end, TRUE);
+    btn_name = gtk_widget_get_name(btn_id);
 
-    refresh_calendar();
+    //SELECT id FROM Day WHERE date = btn_name AND calendar_id = btn_calendar_id
+    char *sql = build_sql(build_sql(build_sql("SELECT COUNT(), id FROM Day WHERE date='",btn_name),"' AND calendar_id="),btn_calendar_id);
+    sqlite3_exec(db, sql, is_day_exist, 0, &err_msg);
+
 }
 
 //  DAY\
@@ -324,7 +397,7 @@ int main(int argc, char **argv){
     }
     gtk_init(&argc, &argv);
 
-    main_calendar();
+    main_menu();
 
     gtk_main();
 
@@ -362,12 +435,11 @@ void    on_logout_activate(){
 
 
 // HASH PASSWORD
-// TODO: REGLER ERREUR DE SEGMENTATION
 
 char *hash_pwd(char *password){
     size_t size = strlen(password);
     char *value = malloc(size + 1);
-    char *hash_password = malloc(size + 1);
+    char *hash_password = malloc(255);
     strcpy(hash_password, "");
     for(int i = 0; i < strlen(password); i++) {
         sprintf(value, "%0x", password[i]);
@@ -484,13 +556,18 @@ void    on_btn_register_clicked(){
 
 //  /EXPORT
 
+int print_combobox(void *NotUsed, int rowCount, char **rowValue, char **rowName){
+    gtk_list_store_append(ListStore, &iter);
+    gtk_list_store_set(ListStore, &iter, 0, rowValue[0], -1);
+}
+
 /*
  * Exportation d'un calendrier :
  * Récupère les valeurs dans la base de donnée pour les insérer dans un fichier texte
  */
 int export_callback(void *NotUsed, int rowCount, char **rowValue, char **rowName) {
-    for (int i = 1; i < rowCount; i++) {
-        //printf("%s = %s\n", rowName[i], rowValue[i]);
+    for (int i = 0; i < rowCount; i++) {
+        printf("%s = %s\n", rowName[i], rowValue[i]);
         fputs("'", save_file); // Ouvre la guillemet au début d'une valeur
         fputs(rowValue[i], save_file); // Ajoute la valeur au fichier texte
         fputs("'", save_file); // Ferme la guillemet à la fin d'une valeur
@@ -502,6 +579,7 @@ int export_callback(void *NotUsed, int rowCount, char **rowValue, char **rowName
 
 void    on_export_activate(){
     dialog = GTK_WIDGET(gtk_builder_get_object(builder, "dialog_export"));
+
     gtk_window_set_default_size(GTK_WINDOW(dialog), 400, 300);
     sprintf(str_id, "%d", user_id);
     char *sql = build_sql(build_sql("SELECT name FROM Calendar WHERE user_id='", str_id),"'"); // Création d'une requête sql
@@ -528,7 +606,10 @@ void    on_btn_validate_export_clicked(){
         //printf("file name : %s\n", getFileName);
         save_file = fopen(getFileName, "w"); // Créer le fichier s'il n'existe pas et l'ouvre en mode édition
         //     TODO: Changer la requête sql
-        char *sql = "select * from Day"; // Création d'une requête sql
+
+        // SELECT * FROM Day INNER JOIN Calendar ON Day.calendar_id = Calendar.id WHERE Calendar.name = getEntry
+        char *sql = build_sql(build_sql("SELECT content, date FROM Day INNER JOIN Calendar ON Day.calendar_id = Calendar.id WHERE Calendar.name = '", getEntry),"'"); // Création d'une requête sql
+        printf("sql : %s\n",sql);
         sqlite3_exec(db, sql, export_callback, 0, &err_msg); // Execute la requête sql et envoie le résultat à la fonction "export_callback"
         free(getFileName);
         fclose(save_file);
@@ -548,16 +629,11 @@ void    on_btn_validate_export_clicked(){
 int import(void *NotUsed, int rowCount, char **rowValue, char **rowName){
     char line[500];
     while ( fgets(line, 500, save_file) != NULL) { // Tant que la ligne lu dans le fichier n'est pas nulle
-        char * sql = build_sql(
-                        build_sql(
-                            build_sql(
-                                build_sql(
-                                    build_sql(sql,
-                                    "INSERT INTO Day(content, date, calendar_id) VALUES("),
-                                line),
-                            ","),
-                        rowValue[0]),
-                 ")");
+        //INSERT INTO Day(content, date, calendar_id) VALUES(line, rowValue[0])
+        printf("id : %s\n", rowValue[0]);
+        char *sql = "";
+        sql = build_sql(build_sql(build_sql(build_sql(build_sql(sql,"INSERT INTO Day(content, date, calendar_id) VALUES("),line),","),rowValue[0]),")");
+        printf("sql : %s\n\n", sql);
         sqlite3_exec(db, sql, NULL , 0, &err_msg); // Execute la requête sql
     }
     fclose(save_file);
@@ -580,13 +656,13 @@ void    on_btn_validate_import_clicked(){
     char *getFileName = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fileChooser));
     if (strcmp(getFileName, "") != 0) {
         sprintf(str_id, "%d", user_id);
-        char *sql = build_sql(
-                build_sql(build_sql(build_sql("INSERT INTO Calendar(name, user_id) VALUES('", getEntry), "','"),
-                          str_id), "')");
+        //INSERT INTO Calendar(name, user_id) VALUES(getEntry, str_id)
+        char *sql = build_sql(build_sql(build_sql(build_sql("INSERT INTO Calendar(name, user_id) VALUES('", getEntry), "','"),str_id), "')");
         sqlite3_exec(db, sql, NULL , 0, &err_msg); // Execute la requête sql
 
         save_file = fopen(getFileName, "rt");  // Ouvre le fichier texte en mode lecture
 
+        //SELECT id FROM Calendar WHERE name = getEntry
         sql = build_sql(build_sql("SELECT id FROM Calendar WHERE name='", getEntry), "'");
         sqlite3_exec(db, sql, import , 0, &err_msg); // Execute la requête sql
     }
@@ -601,13 +677,12 @@ void    on_btn_validate_import_clicked(){
 
 void    on_btn_overview_clicked(GtkWidget *b){
     gtk_widget_hide(window);
+
+    btn_calendar_id = gtk_widget_get_name(b);
+
     main_calendar();
 
-    btn_calendar_id =   gtk_widget_get_name(b);
-    char * sql;
-    sql = (char *) malloc(100 *sizeof(char)); // Allocation d'une variable
-    strcpy(sql, "SELECT name FROM Calendar WHERE id="); // Ajoute le début de la requête sql dans la variable
-    strcat(sql, btn_calendar_id);
+    char * sql = build_sql("SELECT name FROM Calendar WHERE id=",btn_calendar_id);
     sqlite3_exec(db, sql, print_label_calendar_name, 0, &err_msg); // Execute la requête sql
     free(sql);
 
@@ -615,12 +690,10 @@ void    on_btn_overview_clicked(GtkWidget *b){
 
 void    on_btn_delete_clicked(GtkWidget *b){
     btn_calendar_id =   gtk_widget_get_name(b);
-    char * sql;
-    sql = (char *) malloc(100 *sizeof(char)); // Allocation d'une variable
-    strcpy(sql, "DELETE FROM Calendar WHERE id="); // Ajoute le début de la requête sql dans la variable
-    strcat(sql, btn_calendar_id);
+    char * sql = build_sql("DELETE FROM Calendar WHERE id=", btn_calendar_id);
     sqlite3_exec(db, sql, NULL, 0, &err_msg); // Execute la requête sql
-    free(sql);
+    sql = build_sql("DELETE FROM Day WHERE calendar_id=",btn_calendar_id);
+    sqlite3_exec(db, sql, NULL, 0, &err_msg); // Execute la requête sql
     refresh_menu();
 }
 

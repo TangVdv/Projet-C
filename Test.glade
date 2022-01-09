@@ -79,7 +79,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkComboBox">
+          <object class="GtkComboBox" id="comboBox_liststore">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="model">ListStore</property>
@@ -265,7 +265,7 @@
             <property name="layout_style">end</property>
             <child>
               <object class="GtkButton" id="btn_create_login">
-                <property name="label" translatable="yes">Créer</property>
+                <property name="label" translatable="yes">Connexion</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
