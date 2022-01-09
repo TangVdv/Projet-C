@@ -34,6 +34,7 @@ char month_name[12][10] = {"Janvier","Février","Mars","Avril","Mai","Juin","Jui
 
 char *username;
 char *password;
+int menu_number = 6;
 
 void    on_btn_delete_clicked(GtkWidget *b);
 void    on_btn_overview_clicked(GtkWidget *b);
@@ -57,14 +58,25 @@ char * build_sql(const char *part_A, const char *part_B) {
 //  /MAIN MENU
 
 int refresh_menu_callback(void *NotUsed, int rowCount, char **rowValue, char **rowName){
-    printf("Calendrier %d %s", rowCount, rowValue[1]);
+    printf("\n(%d)Calendrier #%s %s\n", menu_number++, rowValue[0], rowValue[1]);
+    printf("(%d)Supprimer\n", menu_number++);
+
 
     return 0;
 }
 
 void refresh_menu(){
 
+    system("clear");
+    printf("---Fichiers---\n");
+    printf("(1) Nouveau\n");
+    printf("(2) Exporter\n");
+    printf("(3) Importer\n");
+    printf("(4) Déconnexion\n");
+    printf("(5) Quitter\n\n\n\n\n\n");
 
+
+    printf("\n\n---Calendriers---");
     if (user_id >= 0) {
         sprintf(str_id, "%d", user_id);
         char *sql = build_sql("SELECT * FROM Calendar WHERE user_id = ", str_id); // Création d'une requête sql
@@ -80,7 +92,7 @@ int print_combobox(void *NotUsed, int rowCount, char **rowValue, char **rowName)
 
 void main_menu(){
     int user_choice;
-    //system("clear");
+    system("clear");
     printf("---Compte---\n");
     printf("(1) Se connecter\n");
     printf("(2) Créer un compte\n");
@@ -253,7 +265,7 @@ void    on_logout_activate(){
 char *hash_pwd(char *password){
     size_t size = strlen(password);
     char *value = malloc(size + 1);
-    char *hash_password = malloc(size + 1);
+    char *hash_password = malloc(255);
     strcpy(hash_password, "");
     for(int i = 0; i < strlen(password); i++) {
         sprintf(value, "%0x", password[i]);
@@ -503,6 +515,10 @@ void    on_btn_delete_clicked(GtkWidget *b){
     char * sql;
     sql = (char *) malloc(100 *sizeof(char)); // Allocation d'une variable
     strcpy(sql, "DELETE FROM Calendar WHERE id="); // Ajoute le début de la requête sql dans la variable
+    strcat(sql, btn_calendar_id);
+    sqlite3_exec(db, sql, NULL, 0, &err_msg); // Execute la requête sql
+
+    strcpy(sql, "DELETE FROM Day WHERE id="); // Ajoute le début de la requête sql dans la variable
     strcat(sql, btn_calendar_id);
     sqlite3_exec(db, sql, NULL, 0, &err_msg); // Execute la requête sql
     free(sql);
