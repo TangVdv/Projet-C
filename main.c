@@ -2,6 +2,7 @@
 #include <gtk/gtk.h>
 #include <sqlite3.h>
 #include <string.h>
+#include <time.h>
 #include <curl/curl.h>
 
 GtkApplication *app;
@@ -38,9 +39,10 @@ char tmp[1024]; //Variable for textview
 char *getEntry_username, *getEntry_password;
 
 int user_id = -1;
-char str_id[10];
+char str[10];
 int user_type = -1;
 int year, month_id, day;
+int current_year, current_month,  current_day;
 char month_name[12][10] = {"Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre\0","Octobre","Novembre","Décembre"};
 
 void    on_btn_delete_clicked(GtkWidget *b);
@@ -91,8 +93,8 @@ void refresh_menu(){
     g_list_free(children);
 
     if (user_id >= 0) {
-        sprintf(str_id, "%d", user_id);
-        char *sql = build_sql("SELECT * FROM Calendar WHERE user_id = ", str_id); // Création d'une requête sql
+        sprintf(str, "%d", user_id);
+        char *sql = build_sql("SELECT * FROM Calendar WHERE user_id = ", str); // Création d'une requête sql
         sqlite3_exec(db, sql, refresh_menu_callback, 0,
                      &err_msg); // Execute la requête sql et envoie le résultat à la fonction "refresh_menu_callback"
 
@@ -136,7 +138,7 @@ void main_menu(){
 
 //  /CALENDAR
 
-// TODO : Libcurl function ( don't understand anything from this **** )
+/*
 size_t got_data(char *buffer, size_t itemsize, size_t nitems, void* ignorethis){
     size_t bytes = itemsize * nitems;
     int linenumber = 0;
@@ -155,21 +157,34 @@ size_t got_data(char *buffer, size_t itemsize, size_t nitems, void* ignorethis){
                 //printf("%d:\t", linenumber);
             }
         }
-        /*
         printf("%c", buffer[i]);
         if (buffer[i] == '\n') {
             linenumber++;
             printf("%d:\t", linenumber);
         }
-         */
+
     }
     printf("\n");
     return bytes;
 }
+*/
 
-int print_label_calendar_name(void *NotUsed, int rowCount, char **rowValue, char **rowName){
+int print_label_calendar(void *NotUsed, int rowCount, char **rowValue, char **rowName){
     GtkWidget *label_calendar_name = GTK_WIDGET(gtk_builder_get_object(builder, "label_calendar_name"));
+    GtkWidget *label_current_date = GTK_WIDGET(gtk_builder_get_object(builder, "label_current_date"));
     gtk_label_set_text(GTK_LABEL(label_calendar_name), rowValue[0]);
+
+    char *current_date = malloc(50);
+    strcpy(current_date,"Date du jour : ");
+    sprintf(str, "%d", current_day);
+    strcat(current_date, str);
+    strcat(current_date, " ");
+    strcat(current_date, month_name[current_month]);
+    strcat(current_date, " ");
+    sprintf(str, "%d", current_year);
+    strcat(current_date, str);
+
+    gtk_label_set_text(GTK_LABEL(label_current_date), current_date);
     gtk_widget_show_all(window);
 }
 
@@ -178,13 +193,19 @@ int set_label_button(void *NotUsed, int rowCount, char **rowValue, char **rowNam
 }
 
 void refresh_calendar(){
-    char value[11];
+
+
+    // SELECT name FROM Calendar WHERE id = btn_calendar_id
+    char * sql = build_sql("SELECT name FROM Calendar WHERE id=",btn_calendar_id);
+    sqlite3_exec(db, sql, print_label_calendar, 0, &err_msg); // Execute la requête sql
+
     GtkWidget *label_year = GTK_WIDGET(gtk_builder_get_object(builder, "label_year"));
     GtkWidget *label_month = GTK_WIDGET(gtk_builder_get_object(builder, "label_month"));
 
-    sprintf(value,"%d",year);
-    gtk_label_set_text(GTK_LABEL(label_year), value);
+    sprintf(str,"%d",year);
+    gtk_label_set_text(GTK_LABEL(label_year), str);
     gtk_label_set_text(GTK_LABEL(label_month), month_name[month_id]);
+
 
     grid = GTK_WIDGET(gtk_builder_get_object(builder, "grid_day"));
 
@@ -216,16 +237,16 @@ void refresh_calendar(){
 
             sprintf(btn_name, "%d", year);
             strcat(btn_name, "-");
-            sprintf(value, "%d",month_id+1);
-            strcat(btn_name, value);
+            sprintf(str, "%d",month_id+1);
+            strcat(btn_name, str);
             strcat(btn_name, "-");
-            sprintf(value, "%d", day);
-            strcat(btn_name, value);
+            sprintf(str, "%d", day);
+            strcat(btn_name, str);
 
 
             GtkWidget *box_btn_day = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
-            GtkWidget *label_calendar_day = gtk_label_new(value);
+            GtkWidget *label_calendar_day = gtk_label_new(str);
             btn_calendar_day = gtk_button_new();
             gtk_widget_set_hexpand(btn_calendar_day, TRUE);
             gtk_widget_set_vexpand(btn_calendar_day, TRUE);
@@ -251,9 +272,6 @@ void refresh_calendar(){
 }
 
 void main_calendar() {
-
-    year = 2021;
-    month_id = 11;
 
     /*
     curl = curl_easy_init();
@@ -386,6 +404,25 @@ void on_save_button_clicked (GtkButton *b){
 // MAIN
 int main(int argc, char **argv){
     printf("Start\n\n");
+
+    // `time_t` is an arithmetic time type
+    time_t now;
+
+    // Obtain current time
+    // `time()` returns the current time of the system as a `time_t` value
+    time(&now);
+
+    // localtime converts a `time_t` value to calendar time and
+    // returns a pointer to a `tm` structure with its members
+    // filled with the corresponding values
+    struct tm *local = localtime(&now);
+
+    current_day = local->tm_mday;            // get day of month (1 to 31)
+    current_month = local->tm_mon + 1;      // get month of year (0 to 11)
+    current_month -= 1;
+    month_id = current_month;
+    current_year = local->tm_year + 1900;   // get year since 1900
+    year = current_year;
 
     rc = sqlite3_open("Projet.database", &db); // Ouvre la base de donnée
 
@@ -581,8 +618,8 @@ void    on_export_activate(){
     dialog = GTK_WIDGET(gtk_builder_get_object(builder, "dialog_export"));
 
     gtk_window_set_default_size(GTK_WINDOW(dialog), 400, 300);
-    sprintf(str_id, "%d", user_id);
-    char *sql = build_sql(build_sql("SELECT name FROM Calendar WHERE user_id='", str_id),"'"); // Création d'une requête sql
+    sprintf(str, "%d", user_id);
+    char *sql = build_sql(build_sql("SELECT name FROM Calendar WHERE user_id='", str),"'"); // Création d'une requête sql
     sqlite3_exec(db, sql, print_combobox, 0, &err_msg); // Execute la requête sql et envoie le résultat à la fonction "print_combobox"
     gtk_widget_show(dialog);
 
@@ -655,9 +692,9 @@ void    on_btn_validate_import_clicked(){
     fileChooser = GTK_WIDGET(gtk_builder_get_object(builder, "fileChooser_import"));
     char *getFileName = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fileChooser));
     if (strcmp(getFileName, "") != 0) {
-        sprintf(str_id, "%d", user_id);
-        //INSERT INTO Calendar(name, user_id) VALUES(getEntry, str_id)
-        char *sql = build_sql(build_sql(build_sql(build_sql("INSERT INTO Calendar(name, user_id) VALUES('", getEntry), "','"),str_id), "')");
+        sprintf(str, "%d", user_id);
+        //INSERT INTO Calendar(name, user_id) VALUES(getEntry, str)
+        char *sql = build_sql(build_sql(build_sql(build_sql("INSERT INTO Calendar(name, user_id) VALUES('", getEntry), "','"),str), "')");
         sqlite3_exec(db, sql, NULL , 0, &err_msg); // Execute la requête sql
 
         save_file = fopen(getFileName, "rt");  // Ouvre le fichier texte en mode lecture
@@ -681,10 +718,6 @@ void    on_btn_overview_clicked(GtkWidget *b){
     btn_calendar_id = gtk_widget_get_name(b);
 
     main_calendar();
-
-    char * sql = build_sql("SELECT name FROM Calendar WHERE id=",btn_calendar_id);
-    sqlite3_exec(db, sql, print_label_calendar_name, 0, &err_msg); // Execute la requête sql
-    free(sql);
 
 }
 
@@ -713,10 +746,10 @@ void    on_btn_create_clicked(){
         entry = GTK_WIDGET(gtk_builder_get_object(builder, "entry_new_name"));
         char *getEntry = gtk_editable_get_chars(GTK_EDITABLE(entry), 0, -1);
         if (strcmp(getEntry, "") != 0) {
-            sprintf(str_id, "%d", user_id);
+            sprintf(str, "%d", user_id);
             char *sql = build_sql(
                     build_sql(build_sql(build_sql("INSERT INTO Calendar(name, user_id) VALUES('", getEntry), "','"),
-                              str_id), "')");
+                              str), "')");
 
             sqlite3_exec(db, sql, NULL, 0,
                          &err_msg); // Execute la requête sql et envoie le résultat à la fonction "refresh_menu"
