@@ -533,7 +533,7 @@ int check_if_user_exist(void *NotUsed, int rowCount, char **rowValue, char **row
         login();
     }
     else {
-        printf("Ce nom d'utilisateur est déjà utilisé\n")
+        printf("Ce nom d'utilisateur est déjà utilisé\n");
         return 0;
     }
 }
