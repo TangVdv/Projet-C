@@ -40,7 +40,6 @@ char *getEntry_username, *getEntry_password;
 
 int user_id = -1;
 char str[10];
-int user_type = -1;
 int year, month_id, day;
 int current_year, current_month,  current_day;
 char month_name[12][10] = {"Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre\0","Octobre","Novembre","Décembre"};
@@ -112,7 +111,7 @@ void refresh_menu(){
 
 void main_menu(){
 
-    builder = gtk_builder_new_from_file("Test.glade");
+    builder = gtk_builder_new_from_file("main.glade");
 
     window = GTK_WIDGET(gtk_builder_get_object(builder, "window"));
     gtk_window_set_default_size(GTK_WINDOW(window), 1000, 500);
@@ -466,7 +465,6 @@ void    on_exit_activate(){
 
 void    on_logout_activate(){
     user_id = -1;
-    user_type = -1;
     refresh_menu();
 }
 
@@ -497,7 +495,6 @@ int check_login_exist_callback(void *NotUsed, int rowCount, char **rowValue, cha
     }
     else{
         user_id = atoi(rowValue[0]);
-        user_type = atoi(rowValue[2]);
         refresh_menu();
     }
 }
@@ -507,7 +504,7 @@ void login(){
             build_sql(
                     build_sql(
                             build_sql(
-                                    "SELECT id,name,type FROM Account GROUP BY id HAVING COUNT(id) = 1 AND name='", getEntry_username),
+                                    "SELECT id,name FROM Account GROUP BY id HAVING COUNT(id) = 1 AND name='", getEntry_username),
                             "' AND password='"),
                     getEntry_password),
             "'");
@@ -699,8 +696,8 @@ void    on_btn_validate_import_clicked(){
 
         save_file = fopen(getFileName, "rt");  // Ouvre le fichier texte en mode lecture
 
-        //SELECT id FROM Calendar WHERE name = getEntry
-        sql = build_sql(build_sql("SELECT id FROM Calendar WHERE name='", getEntry), "'");
+        //SELECT id FROM Calendar WHERE name = getEntry AND id=(SELECT max(id) FROM Calendar)
+        sql = build_sql(build_sql("SELECT id FROM Calendar WHERE name='", getEntry), "' AND id=(SELECT max(id) FROM Calendar)");
         sqlite3_exec(db, sql, import , 0, &err_msg); // Execute la requête sql
     }
     on_btn_cancel_clicked();
