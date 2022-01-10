@@ -348,7 +348,7 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="margin_bottom">20</property>
-            <property name="max_length">50</property>
+            <property name="max_length">30</property>
             <property name="visibility">False</property>
             <property name="invisible_char">*</property>
             <property name="width_chars">5</property>

@@ -63,15 +63,38 @@
             <property name="can_focus">False</property>
             <property name="orientation">vertical</property>
             <child>
-              <object class="GtkLabel" id="label_calendar_name">
+              <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="margin_top">5</property>
-                <property name="margin_bottom">5</property>
-                <attributes>
-                  <attribute name="weight" value="bold"/>
-                  <attribute name="size" value="15000"/>
-                </attributes>
+                <property name="orientation">vertical</property>
+                <property name="spacing">15</property>
+                <child>
+                  <object class="GtkLabel" id="label_calendar_name">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">dqsdqd</property>
+                    <attributes>
+                      <attribute name="weight" value="bold"/>
+                      <attribute name="size" value="15000"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="label_current_date">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -211,90 +234,12 @@
               <object class="GtkGrid" id="grid_day">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
+                <property name="margin_left">10</property>
+                <property name="margin_right">10</property>
+                <property name="margin_top">10</property>
+                <property name="margin_bottom">10</property>
+                <property name="row_spacing">5</property>
+                <property name="column_spacing">5</property>
                 <child>
                   <placeholder/>
                 </child>
