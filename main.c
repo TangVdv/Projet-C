@@ -208,7 +208,6 @@ void refresh_calendar(){
     grid = GTK_WIDGET(gtk_builder_get_object(builder, "grid_day"));
 
     GList *children, *iter;
-    // TODO : Understand and comment this shit
     children = gtk_container_get_children(GTK_CONTAINER(grid));
     for (iter = children; iter != NULL; iter = g_list_next(iter))
         gtk_widget_destroy(GTK_WIDGET(iter->data));
